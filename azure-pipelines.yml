@@ -16,8 +16,9 @@ steps:
 - script: |
     python -m pip install --upgrade pip
     if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    pip install bandit safety  # Install Bandit for code analysis and Safety for dependency CVE checks
-  displayName: 'Install dependencies, Bandit, and Safety'
+    pip install bandit pip-audit junit-xml  # Install Bandit for code analysis and pip-audit for dependency CVE checks
+    pip install git+https://gabrielmartinez945@dev.azure.com/gabrielmartinez945/pip_audit_to_junit/_git/pip_audit_to_junit  # Install script from Azure DevOps
+  displayName: 'Install dependencies, Bandit, pip-audit and conversion script'
 
 - script: |
     PYTHONPATH=$(System.DefaultWorkingDirectory) pytest tests --junitxml=test-results.xml
@@ -44,13 +45,17 @@ steps:
   displayName: 'Publish Bandit security analysis results'
 
 - script: |
-    safety check --full-report --output xml > safety-report.xml || exit 0
-  displayName: 'Run CVE scan on dependencies with Safety'
+    pip-audit -r requirements.txt -f json -o pip-audit-report.json || true
+  displayName: 'Run CVE scan on dependencies with pip-audit'
+
+- script: |
+    python -m pip_audit_to_junit pip-audit-report.json pip-audit-report.xml
+  displayName: 'Convert pip-audit JSON to JUnit XML'
 
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: '**/safety-report.xml'
-    failTaskOnFailedTests: false
-    testRunTitle: 'Safety CVE scan'
-  displayName: 'Publish CVE Scan'
+    testResultsFiles: '**/pip-audit-report.xml'
+    failTaskOnFailedTests: true
+    testRunTitle: 'pip-audit CVE Analysis'
+  displayName: 'Publish pip-audit CVE analysis results'
