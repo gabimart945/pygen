@@ -44,7 +44,7 @@ steps:
   displayName: 'Publish Bandit security analysis results'
 
 - script: |
-    safety check --full-report --output safety-report.txt || exit 0
+    safety check --full-report --output text > safety-report.txt || exit 0
   displayName: 'Run CVE scan on dependencies with Safety'
 
 - task: PublishBuildArtifacts@1
