@@ -32,7 +32,7 @@ steps:
   displayName: 'Publish test results'
 
 - script: |
-    bandit -r pygen -f xml -o bandit-report.xml || true
+    bandit -r tests -f xml -o bandit-report.xml || true
   displayName: 'Run Bandit security analysis'
 
 - task: PublishTestResults@2
