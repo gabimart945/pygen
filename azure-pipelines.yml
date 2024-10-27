@@ -32,7 +32,7 @@ steps:
   displayName: 'Publish test results'
 
 - script: |
-    bandit -r pydev -f xml -o bandit-report.xml || exit 0
+    bandit -r pydev -f xml -o bandit-report.xml --quiet|| exit 0
   displayName: 'Run Bandit security analysis'
 
 - task: PublishTestResults@2
