@@ -16,7 +16,8 @@ steps:
 - script: |
     python -m pip install --upgrade pip
     if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-  displayName: 'Install dependencies'
+    pip install bandit safety  # Install Bandit for code analysis and Safety for dependency CVE checks
+  displayName: 'Install dependencies, Bandit, and Safety'
 
 - script: |
     PYTHONPATH=$(System.DefaultWorkingDirectory) pytest tests --junitxml=test-results.xml
@@ -29,3 +30,26 @@ steps:
     failTaskOnFailedTests: true
     testRunTitle: 'Pytest Results'
   displayName: 'Publish test results'
+
+- script: |
+    bandit -r . -f xml -o bandit-report.xml
+  displayName: 'Run Bandit security analysis'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/bandit-report.xml'
+    failTaskOnFailedTests: true
+    testRunTitle: 'Bandit Security Analysis'
+  displayName: 'Publish Bandit security analysis results'
+
+- script: |
+    safety check --full-report --output safety-report.txt || exit 0
+  displayName: 'Run CVE scan on dependencies with Safety'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'safety-report.txt'
+    artifactName: 'Safety Report'
+  displayName: 'Publish Safety CVE report as artifact'
+
