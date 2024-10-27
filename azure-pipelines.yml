@@ -44,12 +44,13 @@ steps:
   displayName: 'Publish Bandit security analysis results'
 
 - script: |
-    safety check --full-report --output text > safety-report.txt || exit 0
+    safety check --full-report --output xml > safety-report.xml || exit 0
   displayName: 'Run CVE scan on dependencies with Safety'
 
-- task: PublishBuildArtifacts@1
+- task: PublishTestResults@2
   inputs:
-    pathToPublish: 'safety-report.txt'
-    artifactName: 'Safety Report'
-  displayName: 'Publish Safety CVE report as artifact'
-
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/safety-report.xml'
+    failTaskOnFailedTests: false
+    testRunTitle: 'Safety CVE scan'
+  displayName: 'Publish CVE Scan'
