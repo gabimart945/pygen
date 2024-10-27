@@ -1,0 +1,31 @@
+# azure-pipelines.yml
+trigger:
+  branches:
+    include:
+      - main  # Run the pipeline on the main branch; adjust as necessary
+
+pool:
+  vmImage: 'ubuntu-latest'  # Using an Ubuntu image for Linux-based pipelines
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'  # Use the desired Python version
+    addToPath: true
+
+- script: |
+    python -m pip install --upgrade pip
+    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+  displayName: 'Install dependencies'
+
+- script: |
+    PYTHONPATH=$(System.DefaultWorkingDirectory) pytest tests --junitxml=test-results.xml
+  displayName: 'Run tests with pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/test-results.xml'
+    failTaskOnFailedTests: true
+    testRunTitle: 'Pytest Results'
+  displayName: 'Publish test results'
