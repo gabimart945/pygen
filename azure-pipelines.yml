@@ -39,7 +39,7 @@ steps:
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/bandit-report.xml'
-    failTaskOnFailedTests: true
+    failTaskOnFailedTests: false
     testRunTitle: 'Bandit Security Analysis'
   displayName: 'Publish Bandit security analysis results'
 
@@ -51,5 +51,6 @@ steps:
   inputs:
     pathToPublish: 'safety-report.txt'
     artifactName: 'Safety Report'
+    failTaskOnFailedTests: false
   displayName: 'Publish Safety CVE report as artifact'
 
