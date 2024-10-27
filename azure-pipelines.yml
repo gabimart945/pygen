@@ -49,7 +49,7 @@ steps:
   displayName: 'Run CVE scan on dependencies with pip-audit'
 
 - script: |
-    python -m pip_audit_to_junit pip-audit-report.json pip-audit-report.xml
+    pip-audit-to-junit pip-audit-report.json pip-audit-report.xml
   displayName: 'Convert pip-audit JSON to JUnit XML'
 
 - task: PublishTestResults@2
