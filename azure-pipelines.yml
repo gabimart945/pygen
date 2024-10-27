@@ -5,7 +5,7 @@ trigger:
       - main  # Run the pipeline on the main branch; adjust as necessary
 
 pool:
-  vmImage: 'ubuntu-latest'  # Using an Ubuntu image for Linux-based pipelines
+  name: pc
 
 steps:
 - task: UsePythonVersion@0
