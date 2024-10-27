@@ -2,7 +2,7 @@
 trigger:
   branches:
     include:
-      - main  # Run the pipeline on the main branch; adjust as necessary
+      - master  # Run the pipeline on the main branch; adjust as necessary
 
 pool:
   name: pc
@@ -10,7 +10,7 @@ pool:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.x'  # Use the desired Python version
+    versionSpec: '3.10.12'  # Use the desired Python version
     addToPath: true
 
 - script: |
