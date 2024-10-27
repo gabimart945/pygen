@@ -51,6 +51,5 @@ steps:
   inputs:
     pathToPublish: 'safety-report.txt'
     artifactName: 'Safety Report'
-    failTaskOnFailedTests: false
   displayName: 'Publish Safety CVE report as artifact'
 
