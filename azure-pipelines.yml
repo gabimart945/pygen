@@ -36,6 +36,12 @@ steps:
     bandit -r . -f xml -o bandit-report.xml --quiet || true
   displayName: 'Run Bandit security analysis'
 
+- script: |
+    if grep -q "<error" bandit-report.xml; then
+      echo "##vso[task.logissue type=warning]Bandit found security issues."
+    fi
+  displayName: 'Check for Bandit errors and log warning if found'
+
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
