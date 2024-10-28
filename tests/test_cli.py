@@ -1,6 +1,6 @@
 import pytest
 from click.testing import CliRunner
-from pygen.cli import main  # Import the cli function from your module
+from pygen.__main__ import main  # Import the cli function from your module
 
 
 # Test to verify the cli command correctly prints the content of the files

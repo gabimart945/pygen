@@ -11,7 +11,8 @@ import click
 )
 def main(model, config):
     print(model.read().rstrip())
-    print(config.read().rstrip())
+    if config is not None:
+        print(config.read().rstrip())
 
 
 if __name__ == "__main__":
