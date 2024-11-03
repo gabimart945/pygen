@@ -1,4 +1,6 @@
 import click
+from YamlInterpreters import ModelYAMLInterpreter, ConfigurationYAMLInterpreter
+from ProjectConfiguration import ProjectConfiguration
 
 
 @click.command()
@@ -10,9 +12,14 @@ import click
     type=click.File(mode="r"),
 )
 def main(model, config):
-    print(model.read().rstrip())
+    model = ModelYAMLInterpreter().parse(model)
     if config is not None:
-        print(config.read().rstrip())
+        config = ConfigurationYAMLInterpreter().parse(config)
+    else:
+        config = ProjectConfiguration()
+        config.init_form()
+    # TODO: Create Application
+    print(f"Creating application with name: {config.project_name}")
 
 
 if __name__ == "__main__":

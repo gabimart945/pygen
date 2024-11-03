@@ -1,0 +1,60 @@
+# Modelo UML para la aplicación PetClinic
+
+entities:
+  - name: Owner
+    attributes:
+      - name: first_name
+        type: String
+      - name: last_name
+        type: String
+      - name: address
+        type: String
+      - name: city
+        type: String
+      - name: telephone
+        type: String
+
+  - name: Pet
+    attributes:
+      - name: name
+        type: String
+      - name: birth_date
+        type: Date
+
+  - name: PetType
+    attributes:
+      - name: name
+        type: String
+
+  - name: Vet
+    attributes:
+      - name: first_name
+        type: String
+      - name: last_name
+        type: String
+
+  - name: Specialty
+    attributes:
+      - name: name
+        type: String
+
+  - name: Visit
+    attributes:
+      - name: visit_date
+        type: Date
+      - name: description
+        type: String
+
+relationships:
+  - source: Owner
+    target: Pet
+  - source: Pet
+    target: PetType
+  - source: Pet
+    target: Owner
+  - source: Pet
+    target: Visit
+  - source: Vet
+    target: Specialty
+  - source: Visit
+    target: Pet
