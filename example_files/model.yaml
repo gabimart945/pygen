@@ -1,5 +1,6 @@
 # Modelo UML para la aplicación PetClinic
 
+# Definición de Entidades
 entities:
   - name: Owner
     attributes:
@@ -45,16 +46,34 @@ entities:
       - name: description
         type: String
 
+# Definición de Relaciones
 relationships:
   - source: Owner
     target: Pet
+    type: association
+    multiplicity: one-to-many
+
   - source: Pet
     target: PetType
+    type: association
+    multiplicity: many-to-one
+
   - source: Pet
     target: Owner
+    type: association
+    multiplicity: many-to-one
+
   - source: Pet
     target: Visit
+    type: association
+    multiplicity: one-to-many
+
   - source: Vet
     target: Specialty
+    type: association
+    multiplicity: many-to-many
+
   - source: Visit
     target: Pet
+    type: association
+    multiplicity: many-to-one
