@@ -1,4 +1,4 @@
-from sanitizers import sanitize_filename
+from pygen.sanitizers import sanitize_filename
 
 
 class DbConfiguration(object):
@@ -200,7 +200,7 @@ class ProjectConfiguration(object):
         if yaml_configuration is not None:
             self._project_name = yaml_configuration["project_name"]
             self._backend = BackendConfiguration(yaml_configuration["backend"])
-            self._frontend = BackendConfiguration(yaml_configuration["frontend"])
+            self._frontend = FrontendConfiguration(yaml_configuration["frontend"])
 
         else:
             self._project_name = None

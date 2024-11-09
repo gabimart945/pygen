@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 import yaml
-from project_configuration import ProjectConfiguration
-from entity_model import EntityModel
-from sanitizers import sanitize_filename
-from exceptions import ConfigurationException, ModelValidationException
+from pygen.project_configuration import ProjectConfiguration
+from pygen.entity_model import EntityModel
+from pygen.exceptions import ConfigurationException, ModelValidationException
 
 
 class IYamlInterpreter(ABC):
@@ -28,7 +27,7 @@ class IYamlInterpreter(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def validate(self, content):
+    def _validate(self, content):
         """
         Validates the structure and contents of the YAML data.
 
@@ -62,7 +61,7 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
     and transforms it into a ProjectConfiguration object.
     """
 
-    def validate(self, content):
+    def _validate(self, content):
         """
         Validates the YAML content for project configuration.
 
@@ -154,13 +153,13 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
         Parses the YAML configuration file into a ProjectConfiguration object.
 
         Args:
-            file (str): Path to the YAML file.
+            file (File): YAML file.
 
         Returns:
             ProjectConfiguration: The project configuration object.
         """
-        yaml_content = self.read(sanitize_filename(file))
-        if self.validate(yaml_content):
+        yaml_content = self.read(file)
+        if self._validate(yaml_content):
             return ProjectConfiguration(yaml_content)
 
 
@@ -172,7 +171,7 @@ class ModelYAMLInterpreter(IYamlInterpreter):
     into an EntityModel object.
     """
 
-    def validate(self, content):
+    def _validate(self, content):
         """
         Validates the YAML content for the entity model.
 
@@ -212,11 +211,11 @@ class ModelYAMLInterpreter(IYamlInterpreter):
         Parses the YAML model file into an EntityModel object.
 
         Args:
-            file (str): Path to the YAML file.
+            file (File): YAML file.
 
         Returns:
             EntityModel: The entity model object.
         """
-        yaml_content = self.read(sanitize_filename(file))
-        if self.validate(yaml_content):
+        yaml_content = self.read(file)
+        if self._validate(yaml_content):
             return EntityModel(yaml_content)

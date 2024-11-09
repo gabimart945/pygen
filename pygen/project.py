@@ -1,3 +1,5 @@
+import os
+
 
 class Project(object):
     """
@@ -23,6 +25,15 @@ class Project(object):
         """
         self._model = model
         self._config = config
+        if self._config.project_name in os.listdir('.'):
+            items = list(filter(lambda f: self._config.project_name in f, os.listdir('.')))
+            self._root_folder = self._config.project_name + '_' + str(len(items))
+        else:
+            self._root_folder = self._config.project_name
+
+    @property
+    def root_folder(self):
+        return self._root_folder
 
     def generate_project(self):
         """
@@ -38,10 +49,12 @@ class Project(object):
         self._generate_file_structure()
 
         # Generate backend components (e.g., APIs) based on configuration and model
-        self._generate_backend()
+        #self._generate_backend()
 
     def _generate_file_structure(self):
-        raise NotImplementedError
+        os.mkdir(self._root_folder)
+        os.mkdir(self._root_folder + '/backend')
+        os.mkdir(self._root_folder + '/frontend')
 
     def _generate_backend(self):
         raise NotImplementedError

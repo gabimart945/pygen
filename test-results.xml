@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="9" time="0.146" timestamp="2024-11-09T13:04:20.390429+01:00" hostname="pop-os"><testcase classname="tests.test_main" name="test_cli_with_model_and_config_files" time="0.002"><failure message="assert 2 == 0&#10; +  where 2 = &lt;Result SystemExit(2)&gt;.exit_code">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x777d442b1540&gt;
+
+    def test_cli_with_model_and_config_files(monkeypatch):
+        runner = CliRunner()
+    
+        # Execute the command with the temporary files
+        result = runner.invoke(main, ["tests/fixtures/valid_model.yaml", "-c", "fixtures/valid_config.yaml"])
+    
+        # Check that the command executed successfully
+&gt;       assert result.exit_code == 0
+E       assert 2 == 0
+E        +  where 2 = &lt;Result SystemExit(2)&gt;.exit_code
+
+tests/test_main.py:17: AssertionError</failure></testcase><testcase classname="tests.test_main" name="test_cli_version" time="0.001" /><testcase classname="tests.test_main" name="test_cli_initialize_project_with_form" time="0.002" /><testcase classname="tests.test_main" name="test_cli_help" time="0.001" /><testcase classname="tests.test_main" name="test_cli_invalid_command" time="0.001" /><testcase classname="tests.test_yaml_interpreters" name="test_validate_and_parse_valid_config" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/valid_config.yaml'">def test_validate_and_parse_valid_config():
+        interpreter = ConfigurationYAMLInterpreter()
+&gt;       with open('../tests/fixtures/valid_config.yaml', 'r') as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/valid_config.yaml'
+
+tests/test_yaml_interpreters.py:15: FileNotFoundError</failure></testcase><testcase classname="tests.test_yaml_interpreters" name="test_invalid_framework" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/invalid_config_framework.yaml'">def test_invalid_framework():
+        interpreter = ConfigurationYAMLInterpreter()
+        with pytest.raises(ConfigurationException):
+&gt;           with open('../tests/fixtures/invalid_config_framework.yaml', 'r') as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/invalid_config_framework.yaml'
+
+tests/test_yaml_interpreters.py:28: FileNotFoundError</failure></testcase><testcase classname="tests.test_yaml_interpreters" name="test_validate_and_parse_valid_model" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/valid_model.yaml'">def test_validate_and_parse_valid_model():
+        interpreter = ModelYAMLInterpreter()
+&gt;       with open('../tests/fixtures/valid_model.yaml', 'r') as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/valid_model.yaml'
+
+tests/test_yaml_interpreters.py:35: FileNotFoundError</failure></testcase><testcase classname="tests.test_yaml_interpreters" name="test_missing_entities_in_model" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/invalid_model_missing_entities.yaml'">def test_missing_entities_in_model():
+        interpreter = ModelYAMLInterpreter()
+        with pytest.raises(ModelValidationException):
+&gt;           with open('../tests/fixtures/invalid_model_missing_entities.yaml', 'r') as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '../tests/fixtures/invalid_model_missing_entities.yaml'
+
+tests/test_yaml_interpreters.py:45: FileNotFoundError</failure></testcase></testsuite></testsuites>

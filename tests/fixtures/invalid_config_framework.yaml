@@ -1,0 +1,8 @@
+project_name: TestProject
+backend:
+  framework: unsupported_framework
+  database:
+    production: postgresql
+    development: sqlite
+frontend:
+  framework: react
