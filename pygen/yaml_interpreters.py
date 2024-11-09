@@ -109,8 +109,12 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
         Raises:
             ConfigurationException: If backend framework is missing or unsupported.
         """
+        if 'architecture' not in backend:
+            raise ConfigurationException("The backend must contain 'architecture'.")
         if 'framework' not in backend:
             raise ConfigurationException("The backend must contain 'framework'.")
+        if backend["architecture"] not in ["monolithic"]:
+            raise ConfigurationException(f"Unsupported backend architecture: {backend['architecture']}")
         if backend["framework"] not in ["flask"]:
             raise ConfigurationException(f"Unsupported backend framework: {backend['framework']}")
 

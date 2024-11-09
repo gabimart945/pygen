@@ -76,6 +76,7 @@ class BackendConfiguration(object):
                                            and 'database' configuration.
         """
         if yaml_backend is not None:
+            self._architecture = yaml_backend["architecture"]
             self._framework = yaml_backend["framework"]
             self._database = DbConfiguration(yaml_backend["database"])
         else:
@@ -291,6 +292,10 @@ class ProjectConfiguration(object):
         # Set project name
         project_name = input("Enter project name: ")
         self.set_project_name(project_name)
+
+        # Select backend architecture
+        print("\nSelect backend architecture:")
+        self._backend.set_framework(self._get_option(["monolithic"]))
 
         # Select backend framework
         print("\nSelect backend framework:")
