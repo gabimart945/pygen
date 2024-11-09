@@ -75,7 +75,7 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
             ConfigurationException: If any required configuration item is missing or invalid.
         """
         try:
-            self._validate_project_name(content)
+            self._validate_root(content)
             self._validate_backend(content["backend"])
             self._validate_database(content["backend"]["database"])
             self._validate_frontend(content["frontend"])
@@ -85,18 +85,20 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
             raise ex
 
     @staticmethod
-    def _validate_project_name(content):
+    def _validate_root(content):
         """
-        Validates the presence of 'project_name' in the YAML content.
+        Validates root YAML content.
 
         Args:
             content (dict): Parsed YAML content.
 
         Raises:
-            ConfigurationException: If 'project_name' is missing.
+            ConfigurationException: If 'project_name' is missing or auth is invalid.
         """
         if 'project_name' not in content:
             raise ConfigurationException("The YAML file must contain 'project_name' at the root.")
+        if 'auth' in content and content['auth'] not in ["basic"]:
+            raise ConfigurationException(f"Unsupported auth method {content['auth']}")
 
     @staticmethod
     def _validate_backend(backend):

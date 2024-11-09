@@ -36,7 +36,7 @@ def test_cli_initialize_project_with_form(monkeypatch):
     # Execute the command with the temporary files
 
     # Mock user inputs
-    inputs = iter(["TestProject", "1", "1", "1", "2", "1"])  # Mock inputs for project name and selections
+    inputs = iter(["TestProject", "1", "1", "1", "1", "2", "1"])  # Mock inputs for project name and selections
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     # Run initialize command

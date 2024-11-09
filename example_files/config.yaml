@@ -1,4 +1,5 @@
 project_name: Example
+auth: basic
 backend:
   architecture: monolithic
   framework: flask

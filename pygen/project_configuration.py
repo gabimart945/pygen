@@ -123,7 +123,7 @@ class BackendConfiguration(object):
         Raises:
             ValueError: If the framework is unsupported.
         """
-        if architecture == "monolithic":
+        if architecture in ["monolithic"]:
             self._architecture = architecture
         else:
             raise ValueError(f"Unsupported backend architecture: {architecture}")
@@ -138,7 +138,7 @@ class BackendConfiguration(object):
         Raises:
             ValueError: If the framework is unsupported.
         """
-        if framework == "flask":
+        if framework in ["flask"]:
             self._framework = framework
         else:
             raise ValueError(f"Unsupported backend framework: {framework}")
@@ -203,7 +203,7 @@ class FrontendConfiguration(object):
         Raises:
             ValueError: If the framework is unsupported.
         """
-        if framework == "react":
+        if framework in ["react"]:
             self._framework = framework
         else:
             raise ValueError(f"Unsupported frontend framework: {framework}")
@@ -225,11 +225,13 @@ class ProjectConfiguration(object):
         """
         if yaml_configuration is not None:
             self._project_name = yaml_configuration["project_name"]
+            self._auth = yaml_configuration.get("auth", None)
             self._backend = BackendConfiguration(yaml_configuration["backend"])
             self._frontend = FrontendConfiguration(yaml_configuration["frontend"])
 
         else:
             self._project_name = None
+            self._auth = None
             self._backend = BackendConfiguration()
             self._frontend = FrontendConfiguration()
 
@@ -242,6 +244,16 @@ class ProjectConfiguration(object):
             str: Project name.
         """
         return self._project_name
+
+    @property
+    def auth(self):
+        """
+        Gets the authentication method.
+
+        Returns:
+            str: Authentication method.
+        """
+        return self._auth
 
     @property
     def backend(self):
@@ -271,6 +283,21 @@ class ProjectConfiguration(object):
             project_name (str): The name of the project.
         """
         self._project_name = sanitize_filename(project_name)
+
+    def set_auth(self, auth):
+        """
+        Sets the project name after sanitizing it.
+
+        Args:
+            auth (str or None): The authentication method.
+
+        Raises:
+            ValueError: If the authentication method is unsupported.
+        """
+        if auth is None or auth in ["basic"]:
+            self._auth = auth
+        else:
+            raise ValueError(f"Unsupported authentication method: {auth}")
 
     @staticmethod
     def _get_option(options):
@@ -318,6 +345,14 @@ class ProjectConfiguration(object):
         project_name = input("Enter project name: ")
         self.set_project_name(project_name)
 
+        # Select authentication method
+        print("\nSelect authentication method:")
+        auth = self._get_option(["none", "basic"])
+        if auth == "none":
+            self.set_auth(None)
+        else:
+            self.set_auth(auth)
+
         # Select backend architecture
         print("\nSelect backend architecture:")
         self._backend.set_architecture(self._get_option(["monolithic"]))
@@ -341,6 +376,7 @@ class ProjectConfiguration(object):
         # Summary of configuration
         print("\nProject Configuration Complete:")
         print(f"Project Name: {self.project_name}")
+        print(f"Authentication method: {self.auth}")
         print(f"Backend Framework: {self.backend.framework}")
         print(f"Production Database: {self.backend.database.production}")
         print(f"Development Database: {self.backend.database.development}")
