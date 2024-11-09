@@ -84,6 +84,16 @@ class BackendConfiguration(object):
             self._database = DbConfiguration()
 
     @property
+    def architecture(self):
+        """
+        Gets the backend architecture.
+
+        Returns:
+            str: Backend architecture type.
+        """
+        return self._architecture
+
+    @property
     def framework(self):
         """
         Gets the backend framework.
@@ -102,6 +112,21 @@ class BackendConfiguration(object):
             DbConfiguration: Database configuration object.
         """
         return self._database
+
+    def set_architecture(self, architecture):
+        """
+        Sets the backend framework if supported.
+
+        Args:
+            framework (str): Backend framework name.
+
+        Raises:
+            ValueError: If the framework is unsupported.
+        """
+        if architecture == "monolithic":
+            self._architecture = architecture
+        else:
+            raise ValueError(f"Unsupported backend architecture: {architecture}")
 
     def set_framework(self, framework):
         """
@@ -295,7 +320,7 @@ class ProjectConfiguration(object):
 
         # Select backend architecture
         print("\nSelect backend architecture:")
-        self._backend.set_framework(self._get_option(["monolithic"]))
+        self._backend.set_architecture(self._get_option(["monolithic"]))
 
         # Select backend framework
         print("\nSelect backend framework:")

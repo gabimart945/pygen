@@ -1,5 +1,6 @@
 project_name: TestProject
 backend:
+  architecture: monolithic
   framework: flask
   database:
     production: postgresql

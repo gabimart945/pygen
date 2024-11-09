@@ -1,5 +1,6 @@
 project_name: TestProject
 backend:
+  architecture: monolithic
   framework: unsupported_framework
   database:
     production: postgresql

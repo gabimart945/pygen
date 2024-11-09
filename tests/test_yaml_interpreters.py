@@ -12,6 +12,7 @@ def test_validate_and_parse_valid_config():
         config = interpreter.parse(f)
     assert isinstance(config, ProjectConfiguration)
     assert config.project_name == 'TestProject'
+    assert config.backend.architecture == 'monolithic'
     assert config.backend.framework == 'flask'
     assert config.backend.database.production == 'postgresql'
     assert config.backend.database.development == 'sqlite'
