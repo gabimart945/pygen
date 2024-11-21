@@ -1,7 +1,7 @@
 import pytest
 from pygen.yaml_interpreters import ConfigurationYAMLInterpreter, ModelYAMLInterpreter
 from pygen.project_configuration import ProjectConfiguration
-from pygen.entity_model import EntityModel
+from pygen.models.cim import CimModel
 from pygen.exceptions import ConfigurationException, ModelValidationException
 
 
@@ -31,7 +31,7 @@ def test_validate_and_parse_valid_model():
     interpreter = ModelYAMLInterpreter()
     with open('tests/fixtures/valid_model.yaml', 'r') as f:
         model = interpreter.parse(f)
-    assert isinstance(model, EntityModel)
+    assert isinstance(model, CimModel)
     assert len(model._entities) == 1
     assert len(model._relationships) == 1
 

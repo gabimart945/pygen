@@ -1,0 +1,97 @@
+from app.models import db
+from app.models.{{ entity.name.lower() }} import {{ entity.name }}
+{% if config.architecture == "microservices" %}
+import requests
+from flask import current_app
+{% endif %}
+
+class {{ entity.name }}Service:
+
+    def get_all(self):
+        """
+        Retrieves all {{ entity.name.lower() }} records.
+        """
+        return {{ entity.name }}.query.all()
+
+    def get_by_id(self, id):
+        """
+        Retrieves a single {{ entity.name.lower() }} record by ID.
+        """
+        return {{ entity.name }}.query.get(id)
+
+    def create(self, data):
+        """
+        Creates a new {{ entity.name.lower() }} record.
+        """
+        new_item = {{ entity.name }}(**data)
+        db.session.add(new_item)
+        db.session.commit()
+        return new_item
+
+    def update(self, id, data):
+        """
+        Updates an existing {{ entity.name.lower() }} record by ID.
+        """
+        item = self.get_by_id(id)
+        if not item:
+            return None
+        for key, value in data.items():
+            setattr(item, key, value)
+        db.session.commit()
+        return item
+
+    def delete(self, id):
+        """
+        Deletes an existing {{ entity.name.lower() }} record by ID.
+        """
+        item = self.get_by_id(id)
+        if not item:
+            return False
+        db.session.delete(item)
+        db.session.commit()
+        return True
+
+    {% for relationship in entity.relationships %}
+    {% if config.architecture == "microservices" %}
+    def get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(self, id):
+        """
+        Retrieves related {{ relationship.name.lower() }} records for a specific {{ entity.name.lower() }}.
+        """
+        service_url = current_app.config['MICROSERVICES']['{{ relationship.target.lower() }}']
+        response = requests.get(f"{service_url}/api/{{ relationship.target.lower() }}s?{{ entity.name.lower() }}_id={id}")
+        if response.status_code == 200:
+            return response.json()
+        return []
+
+    def add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(self, id, data):
+        """
+        Adds a new {{ relationship.name.lower() }} related to a specific {{ entity.name.lower() }}.
+        """
+        service_url = current_app.config['MICROSERVICES']['{{ relationship.target.lower() }}']
+        response = requests.post(f"{service_url}/api/{{ relationship.target.lower() }}s", json={**data, '{{ entity.name.lower() }}_id': id})
+        return response.json() if response.status_code == 201 else None
+    {% else %}
+    def get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(self, id):
+        """
+        Retrieves related {{ relationship.name.lower() }} records for a specific {{ entity.name.lower() }}.
+        """
+        item = self.get_by_id(id)
+        if not item:
+            return []
+        return item.{{ relationship.name.lower() }}
+
+    def add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(self, id, data):
+        """
+        Adds a new {{ relationship.name.lower() }} related to a specific {{ entity.name.lower() }}.
+        """
+        parent = self.get_by_id(id)
+        if not parent:
+            return None
+        from app.services.{{ relationship.target.lower() }}_service import {{ relationship.target }}Service
+        related_service = {{ relationship.target }}Service()
+        new_item = related_service.create(data)
+        parent.{{ relationship.name.lower() }}.append(new_item)
+        db.session.commit()
+        return new_item
+    {% endif %}
+    {% endfor %}

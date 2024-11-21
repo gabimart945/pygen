@@ -1,4 +1,6 @@
 import os
+from generators import *
+from pygen.generators.backend import MonolithicBackendGenerator
 
 
 class Project(object):
@@ -25,11 +27,19 @@ class Project(object):
         """
         self._model = model
         self._config = config
+        self._paths = {}
         if self._config.project_name in os.listdir('.'):
             items = list(filter(lambda f: self._config.project_name in f, os.listdir('.')))
             self._root_folder = self._config.project_name + '_' + str(len(items))
         else:
             self._root_folder = self._config.project_name
+
+        self._paths["backend"] = self._root_folder + '/backend'
+        self._paths["frontend"] = self._root_folder + '/frontend'
+        if self._config.backend.architecture == "monolithic":
+            self._backend_generator = MonolithicBackendGenerator(self._config, self._model, self._paths["backend"])
+        self._frontend_generator = None
+
 
     @property
     def root_folder(self):
@@ -49,14 +59,15 @@ class Project(object):
         self._generate_file_structure()
 
         # Generate backend components (e.g., APIs) based on configuration and model
-        #self._generate_backend()
+        self._generate_backend()
 
     def _generate_file_structure(self):
         os.mkdir(self._root_folder)
-        os.mkdir(self._root_folder + '/backend')
-        os.mkdir(self._root_folder + '/frontend')
+        os.mkdir(self._paths["backend"])
+        os.mkdir(self._paths["frontend"])
 
     def _generate_backend(self):
-        raise NotImplementedError
+        self._backend_generator.generate()
+
 
 

@@ -1,0 +1,22 @@
+from flask import Flask
+from app.models import db
+from flask_migrate import Migrate
+{% for entity in entities %}
+from app.controllers.{{ entity.name.lower() }}_controller import {{ entity.name.lower() }}_bp
+{% endfor %}
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object('config.DevelopmentConfig')
+    db.init_app(app)
+    migrate = Migrate(app, db)  # Initialize Flask-Migrate
+
+    # Register blueprints
+    {% for entity in entities %}
+    app.register_blueprint({{ entity.name.lower() }}_bp, url_prefix='/api/{{ entity.name.lower() }}s')
+    {% endfor %}
+
+    with app.app_context():
+        db.create_all()
+
+    return app

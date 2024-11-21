@@ -1,0 +1,66 @@
+from flask import Blueprint, request, jsonify
+from app.services.{{ entity.name.lower() }}_service import {{ entity.name }}Service
+
+{{ entity.name.lower() }}_bp = Blueprint('{{ entity.name.lower() }}_bp', __name__)
+
+# Initialize service
+service = {{ entity.name }}Service()
+
+# GET all
+@{{ entity.name.lower() }}_bp.route('/', methods=['GET'])
+def get_all_{{ entity.name.lower() }}s():
+    items = service.get_all()
+    return jsonify(items), 200
+
+# GET by ID
+@{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['GET'])
+def get_{{ entity.name.lower() }}(id):
+    item = service.get_by_id(id)
+    if not item:
+        return jsonify({'error': '{{ entity.name }} not found'}), 404
+    return jsonify(item), 200
+
+# POST (Create)
+@{{ entity.name.lower() }}_bp.route('/', methods=['POST'])
+def create_{{ entity.name.lower() }}():
+    data = request.get_json()
+    item = service.create(data)
+    if not item:
+        return jsonify({'error': 'Error creating {{ entity.name.lower() }}'}), 400
+    return jsonify(item), 201
+
+# PUT (Update)
+@{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['PUT'])
+def update_{{ entity.name.lower() }}(id):
+    data = request.get_json()
+    item = service.update(id, data)
+    if not item:
+        return jsonify({'error': '{{ entity.name }} not found'}), 404
+    return jsonify(item), 200
+
+# DELETE
+@{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['DELETE'])
+def delete_{{ entity.name.lower() }}(id):
+    success = service.delete(id)
+    if not success:
+        return jsonify({'error': '{{ entity.name }} not found'}), 404
+    return '', 204
+
+{% for relationship in entity.relationships %}
+# GET related {{ relationship.name.lower() }}s for {{ entity.name.lower() }}
+@{{ entity.name.lower() }}_bp.route('/<int:id>/{{ relationship.name.lower() }}s', methods=['GET'])
+def get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(id):
+    related_items = service.get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(id)
+    if related_items is None:
+        return jsonify({'error': 'Related items not found'}), 404
+    return jsonify(related_items), 200
+
+# POST related {{ relationship.name.lower() }} for {{ entity.name.lower() }}
+@{{ entity.name.lower() }}_bp.route('/<int:id>/{{ relationship.name.lower() }}s', methods=['POST'])
+def add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(id):
+    data = request.get_json()
+    related_item = service.add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(id, data)
+    if not related_item:
+        return jsonify({'error': 'Error adding related item'}), 400
+    return jsonify(related_item), 201
+{% endfor %}

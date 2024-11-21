@@ -1,0 +1,25 @@
+from app.models import db
+
+class {{ entity.name }}(db.Model):
+    __tablename__ = '{{ entity.table_name }}'
+
+    {% for field in entity.fields %}
+    {{ field.name }} = db.Column(
+        {{ field.type }},
+        {% if field.primary_key %}primary_key=True, {% endif %}
+        {% if field.foreign_key %}db.ForeignKey('{{ field.foreign_key.split('.')[0] }}.{{ field.foreign_key.split('.')[1] }}'), {% endif %}
+        nullable={{ "False" if not field.nullable else "True" }}
+    )
+    {% endfor %}
+
+    {% for relationship in entity.relationships %}
+    {{ relationship.name }} = db.relationship(
+        '{{ relationship.target }}',
+        {% if relationship.type == "many-to-many" %}
+        secondary='{{ relationship.secondary_table }}',
+        {% endif %}
+        back_populates='{{ relationship.back_populates }}'
+        {% if relationship.type == "one-to-many" %}, cascade="all, delete-orphan"{% endif %}
+    )
+    {% endfor %}
+

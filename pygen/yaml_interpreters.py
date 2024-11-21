@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import yaml
 from pygen.project_configuration import ProjectConfiguration
-from pygen.entity_model import EntityModel
+from pygen.models.cim import CimModel
 from pygen.exceptions import ConfigurationException, ModelValidationException
 
 
@@ -209,6 +209,12 @@ class ModelYAMLInterpreter(IYamlInterpreter):
         for relationship in content['relationships']:
             if 'source' not in relationship or 'target' not in relationship:
                 raise ModelValidationException("Each relationship must have 'source' and 'target'.")
+            if 'type' in relationship and relationship['type'] not in ['association', 'aggregation', 'composition']:
+                raise ModelValidationException(f"Unsupported relationship type: {relationship['type']}")
+            if 'source_multiplicity' in relationship and str(relationship['source_multiplicity']) not in ['1', '0..1', '1..*', '0..*']:
+                raise ModelValidationException(f"Unsupported multiplicity: {relationship['source_multiplicity']}")
+            if 'target_multiplicity' in relationship and str(relationship['target_multiplicity']) not in ['1', '0..1', '1..*', '0..*']:
+                raise ModelValidationException(f"Unsupported multiplicity: {relationship['source_multiplicity']}")
 
         return True
 
@@ -224,4 +230,4 @@ class ModelYAMLInterpreter(IYamlInterpreter):
         """
         yaml_content = self.read(file)
         if self._validate(yaml_content):
-            return EntityModel(yaml_content)
+            return CimModel(yaml_content)

@@ -12,6 +12,17 @@ class Attribute:
         self._name = yaml_attribute['name']
         self._type = yaml_attribute['type']
 
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def type(self):
+        return self._type
+
+    def __repr__(self):
+        return f"Attribute(name={self._name!r}, type={self._type!r})"
+
 
 class Entity:
     """Represents an entity in the UML model."""
@@ -26,6 +37,17 @@ class Entity:
         """
         self._name = yaml_entity["name"]
         self._attributes = [Attribute(attribute) for attribute in yaml_entity['attributes']]
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def attributes(self):
+        return self._attributes
+
+    def __repr__(self):
+        return f"Entity(name={self._name!r}, attributes={self._attributes!r})"
 
 
 class Relationship:
@@ -43,12 +65,41 @@ class Relationship:
         """
         self._source = yaml_relationship['source']
         self._target = yaml_relationship['target']
-        self._type = yaml_relationship.get('type', 'association')  # Default to 'association'
-        self._multiplicity = yaml_relationship.get('multiplicity', 'one-to-one')  # Default to 'one-to-one'
+        # Default to 'association', Options: association, aggregation, composition
+        self._type = yaml_relationship.get('type', 'association')
+        # Default to '1', Options: 1, 1..*, 0..1, 0..*
+        self._source_multiplicity = str(yaml_relationship.get('source_multiplicity', '1'))
+        # Default to '1', Options: 1, 1..*, 0..1, 0..*
+        self._target_multiplicity = str(yaml_relationship.get('target_multiplicity', '1'))
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def target(self):
+        return self._target
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def source_multiplicity(self):
+        return self._source_multiplicity
+
+    @property
+    def target_multiplicity(self):
+        return self._target_multiplicity
+
+    def __repr__(self):
+        return (f"Relationship(source={self._source!r}, target={self._target!r}, "
+                f"type={self._type!r}, source_multiplicity={self._source_multiplicity!r}, "
+                f"target_multiplicity={self._target_multiplicity!r})")
 
 
-class EntityModel:
-    """Represents the entire UML model, including entities and relationships."""
+class CimModel:
+    """Represents the entire UML conceptual model, including entities and relationships."""
 
     def __init__(self, yaml_model=None):
         """
@@ -67,3 +118,14 @@ class EntityModel:
                 self._entities.append(Entity(entity))
             for relationship in yaml_model['relationships']:
                 self._relationships.append(Relationship(relationship))
+
+    @property
+    def entities(self):
+        return self._entities
+
+    @property
+    def relationships(self):
+        return self._relationships
+
+    def __repr__(self):
+        return f"CimModel(entities={self._entities!r}, relationships={self._relationships!r})"

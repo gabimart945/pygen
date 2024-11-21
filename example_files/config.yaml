@@ -1,10 +1,9 @@
 project_name: Example
-auth: basic
 backend:
   architecture: monolithic
   framework: flask
   database:
-    production: postgresql
+    production: sqlite
     development: sqlite
 frontend:
   framework: react

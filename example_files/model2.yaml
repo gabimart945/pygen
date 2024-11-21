@@ -27,6 +27,25 @@ entities:
       - name: name
         type: String
 
+  - name: Vet
+    attributes:
+      - name: first_name
+        type: String
+      - name: last_name
+        type: String
+
+  - name: Specialty
+    attributes:
+      - name: name
+        type: String
+
+  - name: Visit
+    attributes:
+      - name: visit_date
+        type: Date
+      - name: description
+        type: String
+
 # Definición de Relaciones
 relationships:
   # Composición: Un Owner tiene Pets, y los Pets no pueden existir sin un Owner
@@ -40,5 +59,19 @@ relationships:
   - source: Pet
     target: PetType
     type: aggregation
-    source_multiplicity: 1..*
+    source_multiplicity: 1
     target_multiplicity: 1
+
+  # Composición: Un Pet tiene Visitas asociadas, y las visitas no tienen sentido sin un Pet
+  - source: Pet
+    target: Visit
+    type: composition
+    source_multiplicity: 1
+    target_multiplicity: 0..*
+
+  # Agregación: Un Vet puede tener varias Especialidades, pero las Especialidades pueden existir sin el Vet
+  - source: Vet
+    target: Specialty
+    type: aggregation
+    source_multiplicity: 1
+    target_multiplicity: 0..*

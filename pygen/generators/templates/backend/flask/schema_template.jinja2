@@ -1,0 +1,6 @@
+from marshmallow import Schema, fields
+
+class {{ entity.name }}Schema(Schema):
+    {% for field in entity.fields %}
+    {{ field.name }} = fields.{{ field.type }}(required={{ "True" if not field.nullable else "False" }})
+    {% endfor %}
