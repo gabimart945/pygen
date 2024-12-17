@@ -1,18 +1,9 @@
-# Modelo UML mejorado para la aplicación PetClinic
-
-# Definición de Entidades
 entities:
   - name: Owner
     attributes:
       - name: first_name
         type: String
       - name: last_name
-        type: String
-      - name: address
-        type: String
-      - name: city
-        type: String
-      - name: telephone
         type: String
 
   - name: Pet
@@ -22,23 +13,10 @@ entities:
       - name: birth_date
         type: Date
 
-  - name: PetType
-    attributes:
-      - name: name
-        type: String
-
-# Definición de Relaciones
 relationships:
-  # Composición: Un Owner tiene Pets, y los Pets no pueden existir sin un Owner
   - source: Owner
     target: Pet
     type: composition
     source_multiplicity: 1
     target_multiplicity: 0..*
 
-  # Agregacion: Cada Pet tiene exactamente un tipo (PetType)
-  - source: Pet
-    target: PetType
-    type: aggregation
-    source_multiplicity: 1..*
-    target_multiplicity: 1

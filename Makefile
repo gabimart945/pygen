@@ -1,8 +1,8 @@
 # Variables
 VENV_DIR := .venv
-PYTHON := $(VENV_DIR)/bin/python
-PIP := $(VENV_DIR)/bin/pip
-PYTEST := $(VENV_DIR)/bin/pytest
+PYTHON := $(VENV_DIR)/Scripts/python
+PIP := $(VENV_DIR)/Scripts/pip
+PYTEST := $(VENV_DIR)/Scripts/pytest
 PROJECT_DIR := .
 TEST_DIR := tests
 REQUIREMENTS := requirements.txt

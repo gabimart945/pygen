@@ -1,6 +1,3 @@
-# Modelo UML mejorado para la aplicación PetClinic
-
-# Definición de Entidades
 entities:
   - name: Owner
     attributes:
@@ -48,28 +45,24 @@ entities:
 
 # Definición de Relaciones
 relationships:
-  # Composición: Un Owner tiene Pets, y los Pets no pueden existir sin un Owner
   - source: Owner
     target: Pet
     type: composition
     source_multiplicity: 1
     target_multiplicity: 0..*
 
-  # Agregacion: Cada Pet tiene exactamente un tipo (PetType)
   - source: Pet
     target: PetType
     type: aggregation
-    source_multiplicity: 1
+    source_multiplicity: 0..*
     target_multiplicity: 1
 
-  # Composición: Un Pet tiene Visitas asociadas, y las visitas no tienen sentido sin un Pet
   - source: Pet
     target: Visit
     type: composition
     source_multiplicity: 1
     target_multiplicity: 0..*
 
-  # Agregación: Un Vet puede tener varias Especialidades, pero las Especialidades pueden existir sin el Vet
   - source: Vet
     target: Specialty
     type: aggregation

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from jinja2 import Environment, FileSystemLoader
 import os
 
-from pygen.models.psm import PsmModel, Entity
+from pygen.models.flask_psm import PsmModel, Entity
 
 
 class IBackendApiGenerator(ABC):
@@ -11,10 +11,11 @@ class IBackendApiGenerator(ABC):
         self._config = config
         self._psm_model = None
 
-    def generate(self, model, root_path):
+    def generate(self, model, root_path, port=5000):
         self._transform_model(model)
+        os.environ['SERVICE_PORT'] = str(port)  # Configura el puerto en variables de entorno
         self._generate_project_files(root_path)
-        self._generate_app(root_path + '/app')
+        self._generate_app(root_path + '/app', port)
         self._generate_controllers(root_path + '/app/controllers')
         self._generate_services(root_path + '/app/services')
         self._generate_models(root_path + '/app/models')
@@ -25,7 +26,7 @@ class IBackendApiGenerator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _generate_app(self, path):
+    def _generate_app(self, path, port):
         raise NotImplementedError
 
     @abstractmethod
@@ -85,6 +86,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
             "Flask",
             "Flask-Migrate",
             "Flask-SQLAlchemy",
+            "marshmallow"
         ]
 
         requirements_path = os.path.join(root_path, "requirements.txt")
@@ -106,7 +108,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
         print(f"Project structure created at {root_path}")
 
 
-    def _generate_app(self, path):
+    def _generate_app(self, path, port):
         """
         Generates the `__init__.py` file for the Flask application.
         """

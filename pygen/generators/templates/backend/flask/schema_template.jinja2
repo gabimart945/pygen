@@ -1,6 +1,37 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
 class {{ entity.name }}Schema(Schema):
     {% for field in entity.fields %}
-    {{ field.name }} = fields.{{ field.type }}(required={{ "True" if not field.nullable else "False" }})
+    {% if field.name == "id" %}
+    {{ field.name }} = fields.Integer(dump_only=True)
+    {% elif field.type == "db.String(255)" %}
+    {{ field.name }} = fields.String(
+        required={{ "True" if not field.nullable else "False" }},
+        validate=validate.Length(min=1, max=255)
+    )
+    {% elif field.type == "db.Integer" %}
+    {{ field.name }} = fields.Integer(
+        required={{ "True" if not field.nullable else "False" }},
+        validate=validate.Range(min=0)
+    )
+    {% elif field.type == "db.Date" %}
+    {{ field.name }} = fields.Date(required={{ "True" if not field.nullable else "False" }})
+    {% elif field.type == "db.DateTime" %}
+    {{ field.name }} = fields.DateTime(required={{ "True" if not field.nullable else "False" }})
+    {% endif %}
+    {% endfor %}
+
+    {% for relationship in entity.relationships %}
+    {% if relationship.type in ["one-to-many", "many-to-many"] %}
+    {{ relationship.name }} = fields.Nested(
+        "{{ relationship.target }}Schema",
+        many=True,
+        exclude=("{{ entity.name.lower() }}",)
+    )
+    {% elif relationship.type in ["many-to-one", "one-to-one"] %}
+    {{ relationship.name }} = fields.Nested(
+        "{{ relationship.target }}Schema",
+        exclude=("{{ relationship.back_populates.lower() }}",)
+    )
+    {% endif %}
     {% endfor %}

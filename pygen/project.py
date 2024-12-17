@@ -1,5 +1,4 @@
 import os
-from generators import *
 from pygen.generators.backend import MonolithicBackendGenerator
 
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pygen.generators.api import FlaskApiGenerator
-from pygen.models.pim import PimModel, Entity, Attribute
+from pygen.models.backend_pim import PimModel, Entity, Attribute
 
 
 class IBackendGenerator(ABC):
@@ -147,8 +147,10 @@ class MicroservicesBackendGenerator(IBackendGenerator):
         self._cim_to_pims()
 
     def _generate_api(self):
+        port = 5000
         for model in self._config.models:
-            self._api_generator.generate(model, self._microservice_paths[model.entity.name])
+            self._api_generator.generate(model, self._microservice_paths[model.entity.name], port)
+            port = port + 1
 
     def _cim_to_pims(self):
         """

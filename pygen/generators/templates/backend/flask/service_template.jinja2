@@ -1,50 +1,54 @@
 from app.models import db
 from app.models.{{ entity.name.lower() }} import {{ entity.name }}
-{% if config.architecture == "microservices" %}
-import requests
-from flask import current_app
-{% endif %}
+from app.schemas.{{ entity.name.lower() }}_schema import {{ entity.name }}Schema
+{% for relationship in entity.relationships %}
+from app.models.{{ relationship.target.lower() }} import {{ relationship.target }}
+from app.schemas.{{ relationship.target.lower() }}_schema import {{ relationship.target }}Schema
+{% endfor %}
 
 class {{ entity.name }}Service:
+    def __init__(self):
+        self._schema = {{ entity.name }}Schema()
+        {% for relationship in entity.relationships %}
+        self._{{ relationship.target.lower() }}_schema = {{ relationship.target }}Schema()
+        {% endfor %}
 
     def get_all(self):
-        """
-        Retrieves all {{ entity.name.lower() }} records.
-        """
-        return {{ entity.name }}.query.all()
+        items = {{ entity.name }}.query.all()
+        return self._schema.dump(items, many=True)
 
     def get_by_id(self, id):
-        """
-        Retrieves a single {{ entity.name.lower() }} record by ID.
-        """
-        return {{ entity.name }}.query.get(id)
+        item = {{ entity.name }}.query.get(id)
+        return self._schema.dump(item) if item else None
 
     def create(self, data):
         """
-        Creates a new {{ entity.name.lower() }} record.
+        Creates a new record after validating and deserializing the input data.
         """
-        new_item = {{ entity.name }}(**data)
+        loaded_data = self._schema.load(data)  # Validacion y deserializacion
+        new_item = {{ entity.name }}(**loaded_data)
         db.session.add(new_item)
         db.session.commit()
-        return new_item
+        return self._schema.dump(new_item), None
 
     def update(self, id, data):
         """
-        Updates an existing {{ entity.name.lower() }} record by ID.
+        Updates an existing record after validating and deserializing the input data.
         """
-        item = self.get_by_id(id)
+        loaded_data = self._schema.load(data)  # Validacion y deserializacion
+        item = {{ entity.name }}.query.get(id)
         if not item:
-            return None
-        for key, value in data.items():
+            return None, None
+        for key, value in loaded_data.items():
             setattr(item, key, value)
         db.session.commit()
-        return item
+        return self._schema.dump(item), None
 
     def delete(self, id):
         """
-        Deletes an existing {{ entity.name.lower() }} record by ID.
+        Deletes an existing record
         """
-        item = self.get_by_id(id)
+        item = {{ entity.name }}.query.get(id)
         if not item:
             return False
         db.session.delete(item)
@@ -52,46 +56,34 @@ class {{ entity.name }}Service:
         return True
 
     {% for relationship in entity.relationships %}
-    {% if config.architecture == "microservices" %}
-    def get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(self, id):
+    def get_{{ relationship.name.lower() }}s(self, id):
         """
-        Retrieves related {{ relationship.name.lower() }} records for a specific {{ entity.name.lower() }}.
+        Retrieves related {{ relationship.target.lower() }} records.
         """
-        service_url = current_app.config['MICROSERVICES']['{{ relationship.target.lower() }}']
-        response = requests.get(f"{service_url}/api/{{ relationship.target.lower() }}s?{{ entity.name.lower() }}_id={id}")
-        if response.status_code == 200:
-            return response.json()
-        return []
-
-    def add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(self, id, data):
-        """
-        Adds a new {{ relationship.name.lower() }} related to a specific {{ entity.name.lower() }}.
-        """
-        service_url = current_app.config['MICROSERVICES']['{{ relationship.target.lower() }}']
-        response = requests.post(f"{service_url}/api/{{ relationship.target.lower() }}s", json={**data, '{{ entity.name.lower() }}_id': id})
-        return response.json() if response.status_code == 201 else None
-    {% else %}
-    def get_{{ relationship.name.lower() }}s_for_{{ entity.name.lower() }}(self, id):
-        """
-        Retrieves related {{ relationship.name.lower() }} records for a specific {{ entity.name.lower() }}.
-        """
-        item = self.get_by_id(id)
+        item = {{ entity.name }}.query.get(id)
         if not item:
-            return []
-        return item.{{ relationship.name.lower() }}
+            return None, {'error': '{{ entity.name }} not found'}
+        related_items = getattr(item, "{{ relationship.name }}")
+        return self._{{ relationship.target.lower() }}_schema.dump(related_items, many={{ "True" if relationship.type in ["one-to-many", "many-to-many"] else "False" }}), None
 
-    def add_{{ relationship.name.lower() }}_to_{{ entity.name.lower() }}(self, id, data):
+    def add_{{ relationship.name.lower() }}(self, id, data):
         """
-        Adds a new {{ relationship.name.lower() }} related to a specific {{ entity.name.lower() }}.
+        Adds a related {{ relationship.target.lower() }} record.
         """
-        parent = self.get_by_id(id)
+        parent = {{ entity.name }}.query.get(id)
         if not parent:
-            return None
-        from app.services.{{ relationship.target.lower() }}_service import {{ relationship.target }}Service
-        related_service = {{ relationship.target }}Service()
-        new_item = related_service.create(data)
-        parent.{{ relationship.name.lower() }}.append(new_item)
+            return None, {'error': '{{ entity.name }} not found'}
+
+        loaded_data = self._{{ relationship.target.lower() }}_schema.load(data)  # Validacion y deserializacion
+        new_related_item = {{ relationship.target }}(**loaded_data)
+        db.session.add(new_related_item)
+
+        # Añadir el nuevo elemento a la relacion
+        if "{{ relationship.type }}" in ["one-to-many", "many-to-many"]:
+            getattr(parent, "{{ relationship.name }}").append(new_related_item)
+        elif "{{ relationship.type }}" in ["many-to-one", "one-to-one"]:
+            setattr(parent, "{{ relationship.name }}", new_related_item)
+
         db.session.commit()
-        return new_item
-    {% endif %}
+        return self._{{ relationship.target.lower() }}_schema.dump(new_related_item), None
     {% endfor %}
