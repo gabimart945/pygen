@@ -150,7 +150,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
     def generate(self):
         self._generate_app()
         self._generate_components()
-        #self._generate_views()
+        self._generate_views()
         #self._generate_routes()
 
     def _generate_components(self):
@@ -208,6 +208,12 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         with open(os.path.join(self._path, "src", "App.js"), "w") as file:
             file.write(output)
 
+        # Generate index.css file
+        css_template = env.get_template("index_css_template.jinja2")
+        css_output = css_template.render()
+        with open(os.path.join(self._path, "src", "index.css"), "w") as file:
+            file.write(css_output)
+
         print(f"React frontend project created at {self._path}")
 
     def _create_project_structure(self):
@@ -217,7 +223,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         folders = [
             "src",
             "src/components",
-            "src/services",
+            "src/views",
             "public",
         ]
 
@@ -299,7 +305,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         for component in self._psm_model.components:
             try:
                 # Load the template for React views
-                template = env.get_template("react_view_template.jinja2")
+                template = env.get_template("view_template.jinja2")
 
                 # Render the template with the current component
                 output = template.render(component=component.to_dict())
