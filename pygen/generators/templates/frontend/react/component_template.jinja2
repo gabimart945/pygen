@@ -3,22 +3,50 @@ import axios from 'axios';
 
 const {{ component.name }}{{ view }} = () => {
     const [data, setData] = useState([]);
+    const [formData, setFormData] = useState({}); // For Form view
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        axios.get('/api/{{ component.name | lower }}s') // Ensure pluralization or route structure matches backend
+        {% if view == 'List' or view == 'Detail' %}
+        axios.get('/api/{{ component.name | lower }}s')
             .then(response => {
                 setData(response.data);
                 setLoading(false);
             })
             .catch(error => {
                 console.error('There was an error fetching the data!', error);
+                setError(error);
                 setLoading(false);
             });
+        {% endif %}
     }, []);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        axios.post('/api/{{ component.name | lower }}s', formData)
+            .then(response => {
+                console.log('Data saved successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error saving the data!', error);
+            });
+    };
 
     if (loading) {
         return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
     }
 
     return (
@@ -27,16 +55,37 @@ const {{ component.name }}{{ view }} = () => {
             {% if view == 'List' %}
             <ul>
                 {data.map(item => (
-                    <li key={item.id}>{item.name}</li> {/* Replace with actual field */}
+                    <li key={item.id}>
+                        {item.name} {/* Replace with actual fields */}
+                    </li>
                 ))}
             </ul>
             {% elif view == 'Form' %}
-            <form>
-                {/* Add form fields here */}
+            <form onSubmit={handleSubmit}>
+                {formData &&
+                    {{ component.fields | tojson }}.map(field => (
+                        <div key={field.name}>
+                            <label>{field.name}</label>
+                            <input
+                                type={field.type}
+                                name={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                    ))}
+                <button type="submit">Save</button>
             </form>
             {% elif view == 'Detail' %}
             <div>
-                {/* Add detail view fields here */}
+                {data.map(item => (
+                    <div key={item.id}>
+                        <p><strong>ID:</strong> {item.id}</p>
+                        {Object.keys(item).map(key => (
+                            <p key={key}><strong>{key}:</strong> {item[key]}</p>
+                        ))}
+                    </div>
+                ))}
             </div>
             {% endif %}
         </div>

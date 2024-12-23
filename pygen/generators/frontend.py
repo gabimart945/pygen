@@ -149,8 +149,8 @@ class ReactFrontendGenerator(FrontendGenerator):
     def generate_frontend(self):
         self._generate_app()
         self._generate_components()
-        self._generate_views()
-        self._generate_routes()
+        #self._generate_views()
+        #self._generate_routes()
 
     def _generate_components(self):
         """
@@ -166,10 +166,21 @@ class ReactFrontendGenerator(FrontendGenerator):
         # Generate components for each entity
         for component in self._psm_model.components:
             for view in ["List", "Form", "Detail"]:
-                template = env.get_template("react_component_template.jinja2")
-                output = template.render(component=component.to_dict(), view=view)
-                with open(os.path.join(components_path, f"{component.name}{view}.jsx"), "w") as file:
-                    file.write(output)
+                try:
+                    # Load the template for React components
+                    template = env.get_template("react_component_template.jinja2")
+
+                    # Render the template with the current component and view
+                    output = template.render(component=component.to_dict(), view=view)
+
+                    # Write the output to a JSX file
+                    file_path = os.path.join(components_path, f"{component.name}{view}.jsx")
+                    with open(file_path, "w") as file:
+                        file.write(output)
+
+                    print(f"Generated {view} component for {component.name} at {file_path}")
+                except Exception as e:
+                    print(f"Error generating {view} component for {component.name}: {e}")
 
         print(f"React components generated at {components_path}")
 
