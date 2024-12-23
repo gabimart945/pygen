@@ -46,7 +46,7 @@ def delete_{{ entity.name.lower() }}(id):
         return jsonify({'error': '{{ entity.name }} not found'}), 404
     return '', 204
 
-{{% for relationship in entity.relationships %}
+{% for relationship in entity.relationships %}
 # GET related {{ relationship.name.lower() }} records
 @{{ entity.name.lower() }}_bp.route('/<int:id>/{{ relationship.name.lower() }}{{ "" if relationship.name.lower().endswith("s") else "s" }}', methods=['GET'])
 def get_{{ relationship.name.lower() }}s(id):

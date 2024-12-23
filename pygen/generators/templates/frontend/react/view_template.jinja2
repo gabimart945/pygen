@@ -1,0 +1,70 @@
+import React, { useState, useEffect } from 'react';
+import { Button, Modal, Tabs, Tab } from 'react-bootstrap';
+import {{ component.name }}List from '../components/{{ component.name }}List';
+import {{ component.name }}Form from '../components/{{ component.name }}Form';
+import {{ component.name }}Detail from '../components/{{ component.name }}Detail';
+
+const {{ component.name }}View = () => {
+    const [showForm, setShowForm] = useState(false);
+    const [currentItem, setCurrentItem] = useState(null); // For editing
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+
+    const handleEdit = (item) => {
+        setCurrentItem(item);
+        setShowForm(true);
+    };
+
+    const handleDelete = (id) => {
+        setDeleteItemId(id);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        // Add deletion logic here
+        setShowDeleteConfirm(false);
+    };
+
+    return (
+        <div>
+            <h1>{{ component.name }} View</h1>
+            <Button onClick={() => setShowForm(true)}>Create New {{ component.name }}</Button>
+
+            <div className="main-table">
+                <{{ component.name }}List onEdit={handleEdit} onDelete={handleDelete} />
+            </div>
+
+            <Tabs defaultActiveKey="main" className="my-3">
+                {% for relationship in component.relationships %}
+                <Tab eventKey="{{ relationship.target | lower }}" title="{{ relationship.target }}">
+                    <div className="related-table">
+                        <{{ relationship.target }}List /> {/* Reuse the List component */}
+                    </div>
+                </Tab>
+                {% endfor %}
+            </Tabs>
+
+            <Modal show={showForm} onHide={() => setShowForm(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{currentItem ? 'Edit' : 'Create'} {{ component.name }}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <{{ component.name }}Form id={currentItem?.id} />
+                </Modal.Body>
+            </Modal>
+
+            <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Delete</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                    <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    );
+};
+
+export default {{ component.name }}View;

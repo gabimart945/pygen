@@ -13,7 +13,7 @@ class FrontendGenerator(ABC):
     """
     Abstract base class for generating frontend applications from a CIM model.
     """
-    def __init__(self, cim_model, config, path):
+    def __init__(self, config, cim_model, path):
         """
         Initializes the frontend generator with a CIM model.
 
@@ -58,14 +58,14 @@ class FrontendGenerator(ABC):
                         pim_entity.add_relationship(relationship.target, "dropdown")
 
     @abstractmethod
-    def transform_pim_to_psm(self):
+    def _transform_pim_to_psm(self):
         """
         Abstract method to transform the PIM model into a PSM model specific to a frontend framework.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def generate_frontend(self):
+    def generate(self):
         """
         Abstract method to generate the frontend application using Jinja2 templates.
 
@@ -75,20 +75,21 @@ class FrontendGenerator(ABC):
         raise NotImplementedError
 
 
-class ReactFrontendGenerator(FrontendGenerator):
+class ReactFrontendGenerator(FrontendGenerator, ABC):
     """
     Concrete implementation of FrontendGenerator for generating React applications.
     """
-    def __init__(self,  cim_model, config, path):
+    def __init__(self, config, cim_model, path):
         """
         Initializes the React frontend generator.
 
         Args:
             cim_model (CimModel): The conceptual independent model.
         """
-        super().__init__( cim_model, config, path)
+        super().__init__( config, cim_model, path)
         self._psm_model = None  # Will store the React-specific components
         self._transform_pim_to_psm()
+        self._templates_path = "pygen/generators/templates/frontend/react"
 
     def _transform_pim_to_psm(self):
         """
@@ -146,7 +147,7 @@ class ReactFrontendGenerator(FrontendGenerator):
         }
         return relationship_mapping.get(relationship_type, "nestedTable")
 
-    def generate_frontend(self):
+    def generate(self):
         self._generate_app()
         self._generate_components()
         #self._generate_views()
@@ -161,14 +162,14 @@ class ReactFrontendGenerator(FrontendGenerator):
         os.makedirs(components_path, exist_ok=True)
 
         # Initialize Jinja2 environment
-        env = Environment(loader=FileSystemLoader("path_to_templates"))
+        env = Environment(loader=FileSystemLoader(self._templates_path))
 
         # Generate components for each entity
         for component in self._psm_model.components:
             for view in ["List", "Form", "Detail"]:
                 try:
                     # Load the template for React components
-                    template = env.get_template("react_component_template.jinja2")
+                    template = env.get_template("component_template.jinja2")
 
                     # Render the template with the current component and view
                     output = template.render(component=component.to_dict(), view=view)
@@ -199,10 +200,10 @@ class ReactFrontendGenerator(FrontendGenerator):
                 "create-react-app failed to execute. Please ensure npm and create-react-app are installed.")
 
         # Initialize Jinja2 environment
-        env = Environment(loader=FileSystemLoader("path_to_templates"))
+        env = Environment(loader=FileSystemLoader(self._templates_path))
 
         # Generate App.js file
-        template = env.get_template("react_app_template.jinja2")
+        template = env.get_template("app_template.jinja2")
         output = template.render(components=self._psm_model.components)
         with open(os.path.join(self._path, "src", "App.js"), "w") as file:
             file.write(output)
@@ -231,7 +232,10 @@ class ReactFrontendGenerator(FrontendGenerator):
             "dependencies": {
                 "react": "^18.0.0",
                 "react-dom": "^18.0.0",
-                "react-scripts": "5.0.0"
+                "react-scripts": "5.0.0",
+                "axios": "^0.21.1",
+                "react-router-dom": "^6.0.0",
+                "react-bootstrap": "^2.5.0"
             },
             "scripts": {
                 "start": "react-scripts start",
@@ -280,3 +284,31 @@ class ReactFrontendGenerator(FrontendGenerator):
             file.write(index_js_content)
 
         print(f"Manual React project structure created at {self._path}")
+
+    def _generate_views(self):
+        """
+        Generates the React frontend views using Jinja2 templates.
+        """
+        views_path = os.path.join(self._path, "src", "views")
+        os.makedirs(views_path, exist_ok=True)
+
+        # Initialize Jinja2 environment
+        env = Environment(loader=FileSystemLoader(self._templates_path))
+
+        # Generate views for each entity
+        for component in self._psm_model.components:
+            try:
+                # Load the template for React views
+                template = env.get_template("react_view_template.jinja2")
+
+                # Render the template with the current component
+                output = template.render(component=component.to_dict())
+
+                # Write the output to a JSX file
+                file_path = os.path.join(views_path, f"{component.name}View.jsx")
+                with open(file_path, "w") as file:
+                    file.write(output)
+
+                print(f"Generated view for {component.name} at {file_path}")
+            except Exception as e:
+                print(f"Error generating view for {component.name}: {e}")

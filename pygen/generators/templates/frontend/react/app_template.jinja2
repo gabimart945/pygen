@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import {{ component.name }}List from './components/{{ component.name }}List';
 import {{ component.name }}Form from './components/{{ component.name }}Form';
 import {{ component.name }}Detail from './components/{{ component.name }}Detail';
+import {{ component.name }}View from './views/{{ component.name }}View';
 {% endfor %}
 
 function App() {
@@ -13,9 +14,14 @@ function App() {
       <div className="App">
         <Switch>
           {% for component in components %}
-          <Route path="/{{ component.name | lower }}/list" component={ {{ component.name }}List } />
-          <Route path="/{{ component.name | lower }}/form" component={ {{ component.name }}Form } />
-          <Route path="/{{ component.name | lower }}/detail/:id" component={ {{ component.name }}Detail } />
+          {/* Main Views */}
+          <Route exact path="/{{ component.name | lower }}/view" component={ {{ component.name }}View } />
+
+          {/* List, Form, and Detail Routes */}
+          <Route exact path="/{{ component.name | lower }}/list" component={ {{ component.name }}List } />
+          <Route exact path="/{{ component.name | lower }}/form" render={(props) => <{{ component.name }}Form id={null} {...props} />} />
+          <Route exact path="/{{ component.name | lower }}/form/:id" render={(props) => <{{ component.name }}Form id={props.match.params.id} {...props} />} />
+          <Route exact path="/{{ component.name | lower }}/detail/:id" component={ {{ component.name }}Detail } />
           {% endfor %}
         </Switch>
       </div>

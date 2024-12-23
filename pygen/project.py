@@ -1,5 +1,6 @@
 import os
 from pygen.generators.backend import MonolithicBackendGenerator
+from pygen.generators.frontend import ReactFrontendGenerator
 
 
 class Project(object):
@@ -37,7 +38,8 @@ class Project(object):
         self._paths["frontend"] = self._root_folder + '/frontend'
         if self._config.backend.architecture == "monolithic":
             self._backend_generator = MonolithicBackendGenerator(self._config, self._model, self._paths["backend"])
-        self._frontend_generator = None
+        if self._config.frontend.framework == "react":
+            self._frontend_generator = ReactFrontendGenerator(self._config, self._model, self._paths["frontend"])
 
 
     @property
@@ -72,6 +74,6 @@ class Project(object):
         self._backend_generator.generate()
 
     def _generate_frontend(self):
-        self._backend_generator.generate()
+        self._frontend_generator.generate()
 
 

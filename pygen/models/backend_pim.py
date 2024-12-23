@@ -1,113 +1,110 @@
 import yaml
 
-class PIMAttribute:
-    """
-    Represents an attribute in the PIM model.
-    """
-    def __init__(self, name: str, attr_type: str, nullable: bool = True):
-        """
-        Initializes a PIM attribute.
 
-        Args:
-            name (str): The name of the attribute.
-            attr_type (str): The type of the attribute (e.g., String, Integer, etc.).
-            nullable (bool): Whether the attribute can be null. Defaults to True.
-        """
-        self.name = name
-        self.type = attr_type
-        self.nullable = nullable
+class Attribute:
+    """Represents an attribute of an entity."""
+    def __init__(self, name, attr_type, primary_key=False, foreign_key=None, nullable=True):
+        self._name = name
+        self._type = attr_type
+        self._primary_key = primary_key
+        self._foreign_key = foreign_key
+        self._nullable = nullable
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def primary_key(self):
+        return self._primary_key
+
+    @property
+    def foreign_key(self):
+        return self._foreign_key
+
+    @property
+    def nullable(self):
+        return self._nullable
 
     def to_dict(self):
-        """
-        Converts the attribute to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the attribute.
-        """
+        """Converts the attribute to a dictionary."""
         return {
             "name": self.name,
             "type": self.type,
+            "primary_key": self.primary_key,
             "nullable": self.nullable
         }
 
     def __repr__(self):
-        return f"PIMAttribute(name={self.name!r}, type={self.type!r}, nullable={self.nullable})"
+        return f"Attribute(name={self.name}, type={self.type}, primary_key={self.primary_key}, nullable={self.nullable})"
 
 
-class PIMRelationship:
-    """
-    Represents a relationship between entities in the PIM model.
-    """
-    def __init__(self, target: str, rel_type: str):
-        """
-        Initializes a PIM relationship.
+class Relationship:
+    """Represents a relationship between entities."""
+    def __init__(self, name, target, rel_type):
+        self._name = name
+        self._target = target
+        self._type = rel_type
 
-        Args:
-            target (str): The name of the target entity.
-            rel_type (str): The type of the relationship (e.g., one-to-one, one-to-many).
-        """
-        self.target = target
-        self.type = rel_type
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def target(self):
+        return self._target
+
+    @property
+    def type(self):
+        return self._type
 
     def to_dict(self):
-        """
-        Converts the relationship to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the relationship.
-        """
+        """Converts the relationship to a dictionary."""
         return {
+            "name": self.name,
             "target": self.target,
             "type": self.type
         }
 
     def __repr__(self):
-        return f"PIMRelationship(target={self.target!r}, type={self.type!r})"
+        return f"Relationship(name={self.name}, target={self.target}, type={self.type})"
 
 
-class PIMEntity:
-    """
-    Represents an entity in the PIM model.
-    """
-    def __init__(self, name: str):
-        """
-        Initializes a PIM entity.
+class Entity:
+    """Represents an entity in the model."""
+    def __init__(self, name):
+        self._name = name
+        self._attributes = []
+        self._relationships = []
 
-        Args:
-            name (str): The name of the entity.
-        """
-        self.name = name
-        self.attributes = []
-        self.relationships = []
+    @property
+    def name(self):
+        return self._name
 
-    def add_attribute(self, name: str, attr_type: str, nullable: bool = True):
-        """
-        Adds an attribute to the entity.
+    @property
+    def attributes(self):
+        return self._attributes
 
-        Args:
-            name (str): The name of the attribute.
-            attr_type (str): The type of the attribute.
-            nullable (bool): Whether the attribute can be null. Defaults to True.
-        """
-        self.attributes.append(PIMAttribute(name, attr_type, nullable))
+    @property
+    def relationships(self):
+        return self._relationships
 
-    def add_relationship(self, target: str, rel_type: str):
-        """
-        Adds a relationship to the entity.
+    def add_attribute(self, name, attr_type, primary_key=False, foreign_key=None, nullable=True):
+        """Adds an attribute to the entity."""
+        attribute = Attribute(name, attr_type, primary_key, foreign_key, nullable)
+        self._attributes.append(attribute)
 
-        Args:
-            target (str): The name of the target entity.
-            rel_type (str): The type of the relationship.
-        """
-        self.relationships.append(PIMRelationship(target, rel_type))
+    def add_relationship(self, name, target, rel_type):
+        """Adds a relationship to the entity."""
+        relationship = Relationship(name, target, rel_type)
+        self._relationships.append(relationship)
 
     def to_dict(self):
-        """
-        Converts the entity to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the entity.
-        """
+        """Converts the entity to a dictionary."""
         return {
             "name": self.name,
             "attributes": [attr.to_dict() for attr in self.attributes],
@@ -115,53 +112,43 @@ class PIMEntity:
         }
 
     def __repr__(self):
-        return f"PIMEntity(name={self.name!r}, attributes={self.attributes!r}, relationships={self.relationships!r})"
+        return f"Entity(name={self.name}, attributes={self.attributes}, relationships={self.relationships})"
 
 
-class PIMModel:
-    """
-    Represents the complete PIM model.
-    """
+class PimModel:
+    """Represents the entire PIM model."""
     def __init__(self):
-        """
-        Initializes an empty PIM model.
-        """
-        self.entities = []
+        self._entities = []
 
-    def add_entity(self, name: str) -> PIMEntity:
+    @property
+    def entities(self):
+        return self._entities
+
+    def add_entity(self, entity):
+        """Adds an entity to the model."""
+        self._entities.append(entity)
+
+    def export_to_yaml(self, file_path=None):
         """
-        Adds an entity to the model.
+        Exports the model to YAML format.
 
         Args:
-            name (str): The name of the entity.
+            file_path (str, optional): If provided, saves the YAML output to the specified file.
+                                       If None, returns the YAML string.
 
         Returns:
-            PIMEntity: The created entity.
+            str: The YAML representation of the model (if file_path is None).
         """
-        entity = PIMEntity(name)
-        self.entities.append(entity)
-        return entity
-
-    def to_dict(self):
-        """
-        Converts the entire model to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the model.
-        """
-        return {
+        model_dict = {
             "entities": [entity.to_dict() for entity in self.entities]
         }
+        yaml_output = yaml.dump(model_dict, sort_keys=False, default_flow_style=False)
 
-    def export_to_yaml(self, file_path: str):
-        """
-        Exports the model to a YAML file.
-
-        Args:
-            file_path (str): The path to the output YAML file.
-        """
-        with open(file_path, "w") as file:
-            yaml.dump(self.to_dict(), file)
+        if file_path:
+            with open(file_path, "w") as file:
+                file.write(yaml_output)
+        else:
+            return yaml_output
 
     def __repr__(self):
-        return f"PIMModel(entities={self.entities!r})"
+        return f"PimModel(entities={self.entities})"

@@ -1,90 +1,102 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const {{ component.name }}{{ view }} = () => {
+const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
     const [data, setData] = useState([]);
-    const [formData, setFormData] = useState({}); // For Form view
+    const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        {% if view == 'List' or view == 'Detail' %}
-        axios.get('/api/{{ component.name | lower }}s')
-            .then(response => {
-                setData(response.data);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('There was an error fetching the data!', error);
-                setError(error);
-                setLoading(false);
-            });
-        {% endif %}
-    }, []);
+        if ("{{ view }}" === "List") {
+            axios.get('/api/{{ component.name | lower }}s')
+                .then(response => {
+                    setData(response.data);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    setError(error);
+                    setLoading(false);
+                });
+        } else if ("{{ view }}" === "Form" && id) {
+            axios.get(`/api/{{ component.name | lower }}s/${id}`)
+                .then(response => {
+                    setFormData(response.data);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching form data:', error);
+                    setError(error);
+                    setLoading(false);
+                });
+        } else {
+            setLoading(false);
+        }
+    }, [id]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
-            [name]: value
+            [name]: value,
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('/api/{{ component.name | lower }}s', formData)
+        const method = id ? 'put' : 'post';
+        const url = id
+            ? `/api/{{ component.name | lower }}s/${id}`
+            : `/api/{{ component.name | lower }}s`;
+
+        axios[method](url, formData)
             .then(response => {
-                console.log('Data saved successfully!', response.data);
+                console.log('Data saved successfully:', response.data);
             })
             .catch(error => {
-                console.error('There was an error saving the data!', error);
+                console.error('Error saving data:', error);
+                setError(error);
             });
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error.message}</div>;
-    }
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
 
     return (
         <div>
-            <h1>{{ component.name }} {{ view }}</h1>
             {% if view == 'List' %}
             <ul>
                 {data.map(item => (
                     <li key={item.id}>
-                        {item.name} {/* Replace with actual fields */}
+                        {item.name} {/* Replace with appropriate field */}
+                        <button onClick={() => onEdit(item)}>Edit</button>
+                        <button onClick={() => onDelete(item.id)}>Delete</button>
                     </li>
                 ))}
             </ul>
             {% elif view == 'Form' %}
             <form onSubmit={handleSubmit}>
-                {formData &&
-                    {{ component.fields | tojson }}.map(field => (
-                        <div key={field.name}>
-                            <label>{field.name}</label>
-                            <input
-                                type={field.type}
-                                name={field.name}
-                                value={formData[field.name] || ''}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                    ))}
-                <button type="submit">Save</button>
+                {{ component.fields | tojson }}.map((field) => (
+                    <div key={field.name}>
+                        <label htmlFor={field.name}>{field.name}</label>
+                        <input
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={formData[field.name] || ''}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                ))}
+                <button type="submit">{id ? 'Update' : 'Create'}</button>
             </form>
             {% elif view == 'Detail' %}
             <div>
-                {data.map(item => (
-                    <div key={item.id}>
-                        <p><strong>ID:</strong> {item.id}</p>
-                        {Object.keys(item).map(key => (
-                            <p key={key}><strong>{key}:</strong> {item[key]}</p>
-                        ))}
-                    </div>
+                {Object.keys(data).map(key => (
+                    <p key={key}>
+                        <strong>{key}:</strong> {data[key]}
+                    </p>
                 ))}
             </div>
             {% endif %}
