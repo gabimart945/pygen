@@ -1,0 +1,46 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const {{ component.name }}{{ view }} = () => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get('/api/{{ component.name | lower }}s') // Ensure pluralization or route structure matches backend
+            .then(response => {
+                setData(response.data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the data!', error);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <div>
+            <h1>{{ component.name }} {{ view }}</h1>
+            {% if view == 'List' %}
+            <ul>
+                {data.map(item => (
+                    <li key={item.id}>{item.name}</li> {/* Replace with actual field */}
+                ))}
+            </ul>
+            {% elif view == 'Form' %}
+            <form>
+                {/* Add form fields here */}
+            </form>
+            {% elif view == 'Detail' %}
+            <div>
+                {/* Add detail view fields here */}
+            </div>
+            {% endif %}
+        </div>
+    );
+};
+
+export default {{ component.name }}{{ view }};

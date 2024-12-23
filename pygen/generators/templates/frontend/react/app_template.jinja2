@@ -1,0 +1,26 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+{% for component in components %}
+import {{ component.name }}List from './components/{{ component.name }}List';
+import {{ component.name }}Form from './components/{{ component.name }}Form';
+import {{ component.name }}Detail from './components/{{ component.name }}Detail';
+{% endfor %}
+
+function App() {
+  return (
+    <Router>
+      <div className="App">
+        <Switch>
+          {% for component in components %}
+          <Route path="/{{ component.name | lower }}/list" component={ {{ component.name }}List } />
+          <Route path="/{{ component.name | lower }}/form" component={ {{ component.name }}Form } />
+          <Route path="/{{ component.name | lower }}/detail/:id" component={ {{ component.name }}Detail } />
+          {% endfor %}
+        </Switch>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
