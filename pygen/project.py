@@ -60,6 +60,9 @@ class Project(object):
         # Generate backend components (e.g., APIs) based on configuration and model
         self._generate_backend()
 
+        # Generate frontend app
+        self._generate_frontend()
+
     def _generate_file_structure(self):
         os.mkdir(self._root_folder)
         os.mkdir(self._paths["backend"])
@@ -68,5 +71,7 @@ class Project(object):
     def _generate_backend(self):
         self._backend_generator.generate()
 
+    def _generate_frontend(self):
+        self._backend_generator.generate()
 
 

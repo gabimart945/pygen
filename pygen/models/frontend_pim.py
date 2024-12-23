@@ -1,5 +1,3 @@
-import yaml
-
 class PIMAttribute:
     """
     Represents an attribute in the PIM model.
@@ -16,19 +14,6 @@ class PIMAttribute:
         self.name = name
         self.type = attr_type
         self.nullable = nullable
-
-    def to_dict(self):
-        """
-        Converts the attribute to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the attribute.
-        """
-        return {
-            "name": self.name,
-            "type": self.type,
-            "nullable": self.nullable
-        }
 
     def __repr__(self):
         return f"PIMAttribute(name={self.name!r}, type={self.type!r}, nullable={self.nullable})"
@@ -48,18 +33,6 @@ class PIMRelationship:
         """
         self.target = target
         self.type = rel_type
-
-    def to_dict(self):
-        """
-        Converts the relationship to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the relationship.
-        """
-        return {
-            "target": self.target,
-            "type": self.type
-        }
 
     def __repr__(self):
         return f"PIMRelationship(target={self.target!r}, type={self.type!r})"
@@ -101,19 +74,6 @@ class PIMEntity:
         """
         self.relationships.append(PIMRelationship(target, rel_type))
 
-    def to_dict(self):
-        """
-        Converts the entity to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the entity.
-        """
-        return {
-            "name": self.name,
-            "attributes": [attr.to_dict() for attr in self.attributes],
-            "relationships": [rel.to_dict() for rel in self.relationships]
-        }
-
     def __repr__(self):
         return f"PIMEntity(name={self.name!r}, attributes={self.attributes!r}, relationships={self.relationships!r})"
 
@@ -141,27 +101,6 @@ class PIMModel:
         entity = PIMEntity(name)
         self.entities.append(entity)
         return entity
-
-    def to_dict(self):
-        """
-        Converts the entire model to a dictionary.
-
-        Returns:
-            dict: Dictionary representation of the model.
-        """
-        return {
-            "entities": [entity.to_dict() for entity in self.entities]
-        }
-
-    def export_to_yaml(self, file_path: str):
-        """
-        Exports the model to a YAML file.
-
-        Args:
-            file_path (str): The path to the output YAML file.
-        """
-        with open(file_path, "w") as file:
-            yaml.dump(self.to_dict(), file)
 
     def __repr__(self):
         return f"PIMModel(entities={self.entities!r})"
