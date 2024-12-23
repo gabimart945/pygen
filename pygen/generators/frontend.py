@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import os
 from jinja2 import Environment, FileSystemLoader
+import subprocess
+
 
 from pygen.models.cim import CimModel
 from pygen.models.frontend_pim import PIMModel
@@ -152,24 +154,118 @@ class ReactFrontendGenerator(FrontendGenerator):
 
     def _generate_components(self):
         """
-        Generates the React frontend application using Jinja2 templates.
-
-        Args:
-            output_path (str): The directory path where the frontend files will be generated.
+        Generates the React frontend application components using Jinja2 templates.
         """
-
-
-        # Ensure output directory exists
-        os.makedirs(self._path, exist_ok=True)
+        # Ensure the src/components directory exists
+        components_path = os.path.join(self._path, "src", "components")
+        os.makedirs(components_path, exist_ok=True)
 
         # Initialize Jinja2 environment
         env = Environment(loader=FileSystemLoader("path_to_templates"))
 
         # Generate components for each entity
         for component in self._psm_model.components:
-            template = env.get_template("react_component_template.jinja2")
-            output = template.render(component=component.to_dict())
-            with open(os.path.join(self._path, f"{component.name}Component.jsx"), "w") as file:
-                file.write(output)
+            for view in ["List", "Form", "Detail"]:
+                template = env.get_template("react_component_template.jinja2")
+                output = template.render(component=component.to_dict(), view=view)
+                with open(os.path.join(components_path, f"{component.name}{view}.jsx"), "w") as file:
+                    file.write(output)
 
-        print(f"React frontend generated at {self._path}")
+        print(f"React components generated at {components_path}")
+
+    def _generate_app(self):
+        """
+        Generates the React App.js using Jinja2 templates and creates the frontend project structure manually if create-react-app is unavailable.
+        """
+        try:
+            # Attempt to create the React app using react-scripts
+            subprocess.run(["npx", "create-react-app", self._path], check=True)
+        except FileNotFoundError:
+            print("create-react-app not found. Creating the project structure manually.")
+            self._create_project_structure()
+        except subprocess.CalledProcessError:
+            raise RuntimeError(
+                "create-react-app failed to execute. Please ensure npm and create-react-app are installed.")
+
+        # Initialize Jinja2 environment
+        env = Environment(loader=FileSystemLoader("path_to_templates"))
+
+        # Generate App.js file
+        template = env.get_template("react_app_template.jinja2")
+        output = template.render(components=self._psm_model.components)
+        with open(os.path.join(self._path, "src", "App.js"), "w") as file:
+            file.write(output)
+
+        print(f"React frontend project created at {self._path}")
+
+    def _create_project_structure(self):
+        """
+        Creates the React project structure manually.
+        """
+        folders = [
+            "src",
+            "src/components",
+            "src/services",
+            "public",
+        ]
+
+        for folder in folders:
+            os.makedirs(os.path.join(self._path, folder), exist_ok=True)
+
+        # Create package.json
+        package_json_content = {
+            "name": "react-frontend",
+            "version": "0.1.0",
+            "private": True,
+            "dependencies": {
+                "react": "^18.0.0",
+                "react-dom": "^18.0.0",
+                "react-scripts": "5.0.0"
+            },
+            "scripts": {
+                "start": "react-scripts start",
+                "build": "react-scripts build",
+                "test": "react-scripts test",
+                "eject": "react-scripts eject"
+            }
+        }
+
+        with open(os.path.join(self._path, "package.json"), "w") as file:
+            import json
+            file.write(json.dumps(package_json_content, indent=2))
+
+        # Create a basic index.html
+        index_html_content = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>React Frontend</title>
+        </head>
+        <body>
+            <div id="root"></div>
+        </body>
+        </html>
+        """
+        with open(os.path.join(self._path, "public", "index.html"), "w") as file:
+            file.write(index_html_content)
+
+        # Create a basic index.js
+        index_js_content = """
+        import React from 'react';
+        import ReactDOM from 'react-dom';
+        import './index.css';
+        import App from './App';
+
+        ReactDOM.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>,
+            document.getElementById('root')
+        );
+        """
+        with open(os.path.join(self._path, "src", "index.js"), "w") as file:
+            file.write(index_js_content)
+
+        print(f"Manual React project structure created at {self._path}")
