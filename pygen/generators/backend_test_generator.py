@@ -118,7 +118,7 @@ class SecurityTestGenerator:
         Generates a Pyntfile for automating the execution of security tests.
         """
         template = self._env.get_template("pyntfile_template.jinja2")
-        rendered = template.render(config=self._config)
+        rendered = template.render(model=self._psm_model)
         file_path = os.path.join(self._tests_path, "Pyntfile")
         with open(file_path, "w") as file:
             file.write(rendered)

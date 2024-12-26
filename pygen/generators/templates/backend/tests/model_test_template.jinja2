@@ -2,7 +2,20 @@ import unittest
 from app.models.{{ entity.name.lower() }} import {{ entity.name }}
 
 class Test{{ entity.name }}Model(unittest.TestCase):
+    """
+    Unit test class for the {{ entity.name }} model.
+
+    This class tests the functionality and attributes of the {{ entity.name }} model,
+    ensuring its structure and initialization are correct.
+    """
+
     def test_model_attributes(self):
-        item = {{ entity.name }}()
-        self.assertIsNotNone(item)
-        # Add more assertions as needed
+        """
+        Test the initialization of the {{ entity.name }} model.
+
+        Verifies that an instance of the {{ entity.name }} model can be created successfully
+        and ensures that its attributes are properly initialized.
+        """
+        item = {{ entity.name }}()  # Create an instance of the model
+        self.assertIsNotNone(item)  # Assert that the instance is not None
+        # Add more assertions as needed to validate specific attributes or methods

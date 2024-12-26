@@ -18,7 +18,7 @@ def run_all_security_tests():
     print("Running all security tests...")
     subprocess.run(["pytest", "tests/security"], cwd=os.getcwd())
 
-{% for entity in config.psm_model.entities %}
+{% for entity in model.entities %}
 @task()
 def run_{{ entity.name.lower() }}_security_tests():
     """

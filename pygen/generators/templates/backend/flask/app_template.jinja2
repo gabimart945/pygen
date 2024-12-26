@@ -6,9 +6,12 @@ from flask_migrate import Migrate
 from app.controllers.{{ entity.name.lower() }}_controller import {{ entity.name.lower() }}_bp
 {% endfor %}
 
-def create_app():
+def create_app(config_name='default'):
     app = Flask(__name__)
-    app.config.from_object('config.DevelopmentConfig')
+    if config_name == 'testing':
+        app.config.from_object('config.TestingConfig')
+    else:
+        app.config.from_object('config.DevelopmentConfig')
 
     # Apply CORS with the allowed origins from the configuration
     CORS(app, origins=app.config["CORS_ALLOWED_ORIGINS"])
