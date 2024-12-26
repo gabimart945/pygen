@@ -47,7 +47,7 @@ class FrontendGenerator(ABC):
                 form_type = type_mapping_to_form.get(attribute.type, "text")
                 pim_entity.add_attribute(attribute.name, form_type)
 
-            # Add relationships to configure nested tables, dropdowns, or many-to-many components
+            # Add relationships to configure nested tables, dropdowns
             for relationship in self._cim_model.relationships:
                 if relationship.source == cim_entity.name:
                     if relationship.type == "composition":
@@ -166,10 +166,10 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Generate components for each entity
         for component in self._psm_model.components:
-            for view in ["List", "Form", "Detail"]:
+            for view in ["Table", "Form", "Detail"]:
                 try:
                     # Load the template for React components
-                    template = env.get_template("component_template.jinja2")
+                    template = env.get_template(f"{view.lower()}_template.jinja2")
 
                     # Render the template with the current component and view
                     output = template.render(component=component.to_dict(), view=view)
@@ -202,6 +202,14 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         # Initialize Jinja2 environment
         env = Environment(loader=FileSystemLoader(self._templates_path))
 
+        # Generate .env file for API configuration
+        env_file_path = os.path.join(self._path, ".env")
+        with open(env_file_path, "w") as env_file:
+            env_file.write("REACT_APP_API_HOST=http://127.0.0.1\n")
+            env_file.write("REACT_APP_API_PORT=5000\n")
+
+        print(f".env file created at {env_file_path}")
+
         # Generate App.js file
         template = env.get_template("app_template.jinja2")
         output = template.render(components=self._psm_model.components)
@@ -209,9 +217,9 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
             file.write(output)
 
         # Generate index.css file
-        css_template = env.get_template("index_css_template.jinja2")
+        css_template = env.get_template("app_css_template.jinja2")
         css_output = css_template.render()
-        with open(os.path.join(self._path, "src", "index.css"), "w") as file:
+        with open(os.path.join(self._path, "src", "app.css"), "w") as file:
             file.write(css_output)
 
         print(f"React frontend project created at {self._path}")
@@ -241,7 +249,8 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
                 "react-scripts": "5.0.0",
                 "axios": "^0.21.1",
                 "react-router-dom": "^6.0.0",
-                "react-bootstrap": "^2.5.0"
+                "react-bootstrap": "^2.5.0",
+                "bootstrap": "^5.3.0"
             },
             "scripts": {
                 "start": "react-scripts start",
@@ -275,16 +284,23 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         # Create a basic index.js
         index_js_content = """
         import React from 'react';
-        import ReactDOM from 'react-dom';
-        import './index.css';
+        import { createRoot } from 'react-dom/client';
         import App from './App';
+        import 'bootstrap/dist/css/bootstrap.min.css';
+        import './app.css';
 
-        ReactDOM.render(
+        
+        // Create the root element
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        
+        // Render the application
+        root.render(
             <React.StrictMode>
                 <App />
-            </React.StrictMode>,
-            document.getElementById('root')
+            </React.StrictMode>
         );
+
         """
         with open(os.path.join(self._path, "src", "index.js"), "w") as file:
             file.write(index_js_content)

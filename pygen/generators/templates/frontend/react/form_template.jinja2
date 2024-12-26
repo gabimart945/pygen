@@ -1,0 +1,109 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const {{ component.name }}Form = ({
+    id,
+    data: passedData,
+    onSuccess,
+    parent,    // e.g. "owner"
+    parentId   // e.g. 5
+}) => {
+    // Si la data se pasa por prop, la usamos como estado inicial;
+    // De lo contrario, empezamos con un objeto vacío.
+    const [formData, setFormData] = useState(passedData || {});
+    // Para Form, cargamos los datos si NO llegan por props y sí hay un ID (modo edición).
+    const [loading, setLoading] = useState(!passedData && !!id);
+    const [error, setError] = useState(null);
+
+    const API_BASE_URL = `${process.env.REACT_APP_API_HOST}:${process.env.REACT_APP_API_PORT}`;
+
+    useEffect(() => {
+        // Si no hay passedData y tenemos un ID => estamos "editando"
+        if (!passedData && id) {
+            // En este ejemplo, para editar, vamos a la ruta clásica
+            // (ajusta si tu API requiere la ruta /parents/parentId/entity/id)
+            axios
+                .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`)
+                .then((response) => {
+                    setFormData(response.data);
+                    setLoading(false);
+                })
+                .catch((error) => {
+                    console.error('Error fetching form data:', error);
+                    setError(error);
+                    setLoading(false);
+                });
+        }
+    }, [id, passedData]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // Determinamos si es modo edición (PUT) o creación (POST)
+        const method = id ? 'put' : 'post';
+
+        let url = `${API_BASE_URL}/api/{{ component.name | lower }}s/`;
+        let payload = { ...formData };
+
+        // Si hay un parent y no hay 'id' => se crea hijo de un parent
+        if (parent && parentId && !id) {
+            url = `${API_BASE_URL}/api/${parent}s/${parentId}/{{ component.name | lower }}s`;
+            // Añadimos la referencia en el body, p.ej. { owner_id: 5 }
+            payload = {
+                ...formData,
+                [`${parent}_id`]: parentId,
+            };
+        }
+        // Si hay un 'id' => actualización normal
+        else if (id) {
+            url = `${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`;
+
+        }
+
+        axios[method](url, payload)
+            .then((response) => {
+                console.log('Data saved successfully:', response.data);
+                if (onSuccess) {
+                    onSuccess(response.data);
+                }
+            })
+            .catch((error) => {
+                console.error('Error saving data:', error);
+                setError(error);
+            });
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    // Campos definidos en tu template (por ejemplo: name, type, etc.)
+    let fields = {{ component.fields | tojson }};
+
+    return (
+        <form onSubmit={handleSubmit}>
+            {fields.map((field) => (
+                <div key={field.name}>
+                    <label htmlFor={field.name}>{field.name}</label>
+                    <input
+                        type={field.type}
+                        id={field.name}
+                        name={field.name}
+                        value={formData[field.name] || ''}
+                        onChange={handleInputChange}
+                    />
+                </div>
+            ))}
+            <button type="submit">{id ? 'Update' : 'Create'}</button>
+        </form>
+    );
+};
+
+export default {{ component.name }}Form;

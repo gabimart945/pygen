@@ -3,7 +3,7 @@ from marshmallow import Schema, fields, validate
 class {{ entity.name }}Schema(Schema):
     {% for field in entity.fields %}
     {% if field.name == "id" %}
-    {{ field.name }} = fields.Integer(dump_only=True)
+    {{ field.name }} = fields.Integer(required=False)
     {% elif field.type == "db.String(255)" %}
     {{ field.name }} = fields.String(
         required={{ "True" if not field.nullable else "False" }},

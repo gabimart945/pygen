@@ -1,0 +1,44 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const {{ component.name }}Detail = ({ id, data: passedData }) => {
+    // Si la data se pasa por prop, la usamos directamente;
+    // de lo contrario, cargamos datos de la API.
+    const [data, setData] = useState(passedData || {});
+    const [loading, setLoading] = useState(!passedData && !!id);
+    const [error, setError] = useState(null);
+
+    const API_BASE_URL = `${process.env.REACT_APP_API_HOST}:${process.env.REACT_APP_API_PORT}`;
+
+    useEffect(() => {
+        // Solo si no hay data pasada y tenemos un ID, hacemos fetch
+        if (!passedData && id) {
+            axios.get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`)
+                .then(response => {
+                    setData(response.data);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching detail data:', error);
+                    setError(error);
+                    setLoading(false);
+                });
+        }
+    }, [id, passedData]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    // Muestra cada propiedad del objeto
+    return (
+        <div>
+            {Object.keys(data).map(key => (
+                <p key={key}>
+                    <strong>{key}:</strong> {data[key]}
+                </p>
+            ))}
+        </div>
+    );
+};
+
+export default {{ component.name }}Detail;

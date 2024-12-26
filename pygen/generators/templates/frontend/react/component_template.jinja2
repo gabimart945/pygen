@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
-    const [data, setData] = useState([]);
+const {{ component.name }}{{ view }} = ({ onEdit, onDelete, onSelect, id, data: passedData }) => {
+    const [data, setData] = useState(passedData || []);
     const [formData, setFormData] = useState({});
-    const [loading, setLoading] = useState(true);
+    {% if view == 'List' %}
+        const [loading, setLoading] = useState(!passedData);
+    {% else %}
+        const [loading, setLoading] = useState(!passedData && id);
+    {% endif %}
     const [error, setError] = useState(null);
 
+    const API_BASE_URL = `${process.env.REACT_APP_API_HOST}:${process.env.REACT_APP_API_PORT}`;
+
+
+    {% if view == 'List' %}
     useEffect(() => {
-        if ("{{ view }}" === "List") {
-            axios.get('/api/{{ component.name | lower }}s')
+        if (!passedData ) {
+            axios.get(`${API_BASE_URL}/api/{{ component.name | lower }}s`)
                 .then(response => {
                     setData(response.data);
                     setLoading(false);
@@ -19,8 +27,12 @@ const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
                     setError(error);
                     setLoading(false);
                 });
-        } else if ("{{ view }}" === "Form" && id) {
-            axios.get(`/api/{{ component.name | lower }}s/${id}`)
+        }
+    }, [id, passedData]);
+    {% elif view == 'Form' %}
+    useEffect(() => {
+        if (!passedData && id) {
+            axios.get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`)
                 .then(response => {
                     setFormData(response.data);
                     setLoading(false);
@@ -30,10 +42,12 @@ const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
                     setError(error);
                     setLoading(false);
                 });
-        } else {
-            setLoading(false);
         }
-    }, [id]);
+    }, [id, passedData]);
+    {% endif %}
+
+
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -47,8 +61,8 @@ const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
         e.preventDefault();
         const method = id ? 'put' : 'post';
         const url = id
-            ? `/api/{{ component.name | lower }}s/${id}`
-            : `/api/{{ component.name | lower }}s`;
+            ? `${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`
+            : `${API_BASE_URL}/api/{{ component.name | lower }}s/`;
 
         axios[method](url, formData)
             .then(response => {
@@ -63,20 +77,36 @@ const {{ component.name }}{{ view }} = ({ onEdit, onDelete, id }) => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error.message}</div>;
 
-    let fields = {{ component.fields | tojson }}
+    let fields = {{ component.fields | tojson }};
 
     return (
         <div>
             {% if view == 'List' %}
-            <ul>
-                {data.map(item => (
-                    <li key={item.id}>
-                        {item.name} {/* Replace with appropriate field */}
-                        <button onClick={() => onEdit(item)}>Edit</button>
-                        <button onClick={() => onDelete(item.id)}>Delete</button>
-                    </li>
-                ))}
-            </ul>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        {% for field in component.fields %}
+                        <th>{{field.name}}</th>
+                        {% endfor %}
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map(item => (
+                        <tr key={item.id} onClick={() => onSelect && onSelect(item)} className="clickable-row">
+                            <td>{item.id}</td>
+                            {% for field in component.fields %}
+                            <td>{item["{{field.name}}"]}</td>
+                            {% endfor %}
+                            <td>
+                                {onEdit && <button onClick={(e) => { e.stopPropagation(); onEdit(item); }}>Edit</button>}
+                                {onDelete && <button onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}>Delete</button>}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
             {% elif view == 'Form' %}
             <form onSubmit={handleSubmit}>
                 {fields.map((field) => (

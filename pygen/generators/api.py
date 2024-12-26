@@ -86,7 +86,8 @@ class FlaskApiGenerator(IBackendApiGenerator):
             "Flask",
             "Flask-Migrate",
             "Flask-SQLAlchemy",
-            "marshmallow"
+            "marshmallow",
+            "flask-cors"
         ]
 
         requirements_path = os.path.join(root_path, "requirements.txt")
