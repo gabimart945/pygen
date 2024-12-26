@@ -1,0 +1,16 @@
+import unittest
+from app.services.{{ entity.name.lower() }}_service import {{ entity.name }}Service
+
+class Test{{ entity.name }}Service(unittest.TestCase):
+    def setUp(self):
+        self.service = {{ entity.name }}Service()
+
+    def test_get_all(self):
+        items = self.service.get_all()
+        self.assertIsInstance(items, list)
+        # Add more assertions as needed
+
+    def test_create(self):
+        item, errors = self.service.create({})
+        self.assertIsNone(errors)
+        # Add more assertions as needed

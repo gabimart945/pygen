@@ -1,0 +1,8 @@
+import unittest
+from app.models.{{ entity.name.lower() }} import {{ entity.name }}
+
+class Test{{ entity.name }}Model(unittest.TestCase):
+    def test_model_attributes(self):
+        item = {{ entity.name }}()
+        self.assertIsNotNone(item)
+        # Add more assertions as needed

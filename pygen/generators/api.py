@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from jinja2 import Environment, FileSystemLoader
 import os
 
+from pygen.generators.backend_test_generator import BackendTestGenerator, SecurityTestGenerator, \
+    IntegrationTestGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
 
@@ -13,13 +15,14 @@ class IBackendApiGenerator(ABC):
 
     def generate(self, model, root_path, port=5000):
         self._transform_model(model)
-        os.environ['SERVICE_PORT'] = str(port)  # Configura el puerto en variables de entorno
+        os.environ['SERVICE_PORT'] = str(port)
         self._generate_project_files(root_path)
         self._generate_app(root_path + '/app', port)
         self._generate_controllers(root_path + '/app/controllers')
         self._generate_services(root_path + '/app/services')
         self._generate_models(root_path + '/app/models')
         self._generate_schemas(root_path + '/app/schemas')
+        self._generate_tests(root_path + '/tests')
 
     @abstractmethod
     def _generate_project_files(self, root_path):
@@ -47,6 +50,10 @@ class IBackendApiGenerator(ABC):
 
     @abstractmethod
     def _transform_model(self, model):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _generate_tests(self, path):
         raise NotImplementedError
 
 
@@ -87,7 +94,10 @@ class FlaskApiGenerator(IBackendApiGenerator):
             "Flask-Migrate",
             "Flask-SQLAlchemy",
             "marshmallow",
-            "flask-cors"
+            "flask-cors",
+            "pytest",
+            "requests",
+            "pynt"
         ]
 
         requirements_path = os.path.join(root_path, "requirements.txt")
@@ -264,7 +274,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         Args:
             env (Environment): The Jinja2 environment.
-            schemas_path (str): Path to the schemas directory.
+            schemas_path (str): Path to the schemas' directory.
             entity (Entity): The entity for which the schema is generated.
         """
         # Render the schema template
@@ -366,3 +376,11 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Return the mapped type or a default (e.g., db.String(255) for unknown types)
         return type_mapping.get(pim_type, "db.String(255)")
+
+    def _generate_tests(self, path):
+        unit_test_generator = BackendTestGenerator(self._config, self._psm_model, path + '/unit')
+        unit_test_generator.generate()
+        integration_test_generator = IntegrationTestGenerator(self._config, self._psm_model, path + '/integration')
+        integration_test_generator.generate()
+        security_test_generator = SecurityTestGenerator(self._config, self._psm_model, path + '/security')
+        security_test_generator.generate()
