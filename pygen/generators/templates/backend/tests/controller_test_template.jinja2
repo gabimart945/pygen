@@ -17,18 +17,18 @@ class Test{{ entity.name }}Controller(unittest.TestCase):
         This method initializes the application in testing mode and prepares a test client
         for making requests to the application.
         """
-        self.app = create_app()  # Create the Flask application instance
+        self.app = create_app("testing")  # Create the Flask application instance
         self.client = self.app.test_client()  # Create a test client for HTTP requests
 
     def test_get_all_{{ entity.name.lower() }}s(self):
         """
         Test the GET endpoint for retrieving all {{ entity.name }} entities.
 
-        Sends a GET request to the `/api/{{ entity.name.lower() }}s` endpoint and verifies
+        Sends a GET request to the `/api/{{ entity.name.lower() }}s/` endpoint and verifies
         that the response status code is 200, indicating successful retrieval.
         """
-        response = self.client.get('/api/{{ entity.name.lower() }}s')  # Perform a GET request
-        self.assertEqual(response.status_code, 200)  # Assert the response code is 200
+        response = self.client.get('/api/{{ entity.name.lower() }}s/')  # Perform a GET request
+        self.assertEqual(200, response.status_code)  # Assert the response code is 200
         # Add more assertions as needed to validate the response content
 
     def test_create_{{ entity.name.lower() }}(self):
@@ -38,6 +38,12 @@ class Test{{ entity.name }}Controller(unittest.TestCase):
         Sends a POST request to the `/api/{{ entity.name.lower() }}s` endpoint with an empty JSON payload
         and verifies that the response status code is 201, indicating successful creation.
         """
-        response = self.client.post('/api/{{ entity.name.lower() }}s', json={})  # Perform a POST request
-        self.assertEqual(response.status_code, 201)  # Assert the response code is 201
+        payload = {
+            {% for field in entity.fields if field.foreign_key %}
+            "{{ field.name }}": 1,  # Replace '1' with a valid foreign key value if necessary
+            {% endfor %}
+        }
+
+        response = self.client.post('/api/{{ entity.name.lower() }}s/', json=payload)  # Perform a POST request
+        self.assertEqual(201, response.status_code)  # Assert the response code is 201
         # Add more assertions as needed to validate the response content

@@ -27,6 +27,7 @@ class BackendTestGenerator:
         for entity in self._psm_model.entities:
             self._generate_controller_tests(entity)
             self._generate_service_tests(entity)
+            self._generate_schema_tests(entity)
             self._generate_model_tests(entity)
 
     def _generate_controller_tests(self, entity):
@@ -56,6 +57,20 @@ class BackendTestGenerator:
         with open(file_path, "w") as file:
             file.write(rendered)
         print(f"Service test generated for {entity.name} at {file_path}")
+
+    def _generate_schema_tests(self, entity):
+        """
+        Generates unit tests for the model of an entity.
+
+        Args:
+            entity (Entity): The entity to generate tests for.
+        """
+        template = self._env.get_template("schema_test_template.jinja2")
+        rendered = template.render(entity=entity)
+        file_path = os.path.join(self._tests_path, f"test_{entity.name.lower()}_schema.py")
+        with open(file_path, "w") as file:
+            file.write(rendered)
+        print(f"Schema test generated for {entity.name} at {file_path}")
 
     def _generate_model_tests(self, entity):
         """

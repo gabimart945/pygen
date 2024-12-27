@@ -51,6 +51,12 @@ class Test{{ entity.name }}Service(unittest.TestCase):
 
         Verifies that a new {{ entity.name }} entity can be created successfully without errors.
         """
-        item, errors = self.service.create({})  # Call the service method with empty data
+        # Generate payload dynamically with only foreign keys
+        payload = {
+            {% for field in entity.fields if field.foreign_key %}
+            "{{ field.name }}": 1,  # Replace '1' with a valid foreign key value if necessary
+            {% endfor %}
+        }
+        item, errors = self.service.create(payload)  # Call the service method with empty data
         self.assertIsNone(errors)  # Assert no errors occurred
         # Add more assertions as needed
