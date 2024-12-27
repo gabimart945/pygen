@@ -3,7 +3,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 import subprocess
 
-
+from pygen.generators.frontend_test_generator import ReactTestGenerator
 from pygen.models.cim import CimModel
 from pygen.models.frontend_pim import PIMModel
 from pygen.models.react_psm import PSMModel
@@ -90,6 +90,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         self._psm_model = None  # Will store the React-specific components
         self._transform_pim_to_psm()
         self._templates_path = "pygen/generators/templates/frontend/react"
+        self._test_generator = ReactTestGenerator(config, self._psm_model, os.path.join(path, "src/tests"))
 
     def _transform_pim_to_psm(self):
         """
@@ -151,7 +152,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         self._generate_app()
         self._generate_components()
         self._generate_views()
-        #self._generate_routes()
+        self._test_generator.generate()
 
     def _generate_components(self):
         """
@@ -240,29 +241,58 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Create package.json
         package_json_content = {
-            "name": "react-frontend",
-            "version": "0.1.0",
-            "private": True,
-            "dependencies": {
-                "react": "^18.0.0",
-                "react-dom": "^18.0.0",
-                "react-scripts": "5.0.0",
-                "axios": "^0.21.1",
-                "react-router-dom": "^6.0.0",
-                "react-bootstrap": "^2.5.0",
-                "bootstrap": "^5.3.0"
-            },
-            "scripts": {
-                "start": "react-scripts start",
-                "build": "react-scripts build",
-                "test": "react-scripts test",
-                "eject": "react-scripts eject"
-            }
+          "name": "react-frontend",
+          "version": "0.1.0",
+          "private": True,
+          "dependencies": {
+            "react": "^18.0.0",
+            "react-dom": "^18.0.0",
+            "react-scripts": "5.0.0",
+            "axios": "^0.21.1",
+            "react-router-dom": "^6.0.0",
+            "react-bootstrap": "^2.5.0",
+            "bootstrap": "^5.3.0"
+          },
+          "devDependencies": {
+            "@testing-library/react": "^14.0.0",
+            "@testing-library/jest-dom": "^6.0.0",
+            "@testing-library/user-event": "^14.0.0",
+            "jest": "^29.0.0",
+            "jest-environment-jsdom": "^29.0.0"
+          },
+          "scripts": {
+            "start": "react-scripts start",
+            "build": "react-scripts build",
+            "test": "react-scripts test",
+            "test:coverage": "react-scripts test -- --coverage",
+            "eject": "react-scripts eject"
+          }
         }
+
 
         with open(os.path.join(self._path, "package.json"), "w") as file:
             import json
             file.write(json.dumps(package_json_content, indent=2))
+
+        # Create jest.config.js
+        jest_content = """
+        module.exports = {
+          testEnvironment: 'jsdom',
+          moduleNameMapper: {
+            '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+          },
+          setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
+        };
+        """
+        with open(os.path.join(self._path, "jest.config.js"), "w") as file:
+            file.write(jest_content)
+
+        # Create setupTests.js
+        setup_content = """
+        import '@testing-library/jest-dom';
+        """
+        with open(os.path.join(self._path, "src", "setupTests.js"), "w") as file:
+            file.write(setup_content)
 
         # Create a basic index.html
         index_html_content = """
@@ -280,6 +310,8 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         """
         with open(os.path.join(self._path, "public", "index.html"), "w") as file:
             file.write(index_html_content)
+
+
 
         # Create a basic index.js
         index_js_content = """

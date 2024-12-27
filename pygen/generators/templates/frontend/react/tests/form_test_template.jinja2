@@ -1,0 +1,24 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import {{ component.name }}Form from '../components/{{ component.name }}Form';
+
+describe('{{ component.name }}Form Component Tests', () => {
+    it('renders without crashing', () => {
+        render(<{{ component.name }}Form />);
+        expect(screen.getByText(/Submit/i)).toBeInTheDocument();
+    });
+
+    it('handles form submission', () => {
+        const mockOnSubmit = jest.fn();
+        render(<{{ component.name }}Form onSuccess={mockOnSubmit} />);
+        fireEvent.submit(screen.getByText(/Submit/i));
+        expect(mockOnSubmit).toHaveBeenCalled();
+    });
+
+    it('updates form fields correctly', () => {
+        render(<{{ component.name }}Form />);
+        const input = screen.getByLabelText(/Name/i);
+        fireEvent.change(input, { target: { value: 'Test Value' } });
+        expect(input.value).toBe('Test Value');
+    });
+});

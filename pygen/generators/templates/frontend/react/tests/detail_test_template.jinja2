@@ -1,0 +1,21 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import {{ component.name }}Detail from '../components/{{ component.name }}Detail';
+
+describe('{{ component.name }}Detail Component Tests', () => {
+    it('renders without crashing', () => {
+        render(<{{ component.name }}Detail />);
+        expect(screen.getByText(/Details/i)).toBeInTheDocument();
+    });
+
+    it('displays data passed via props', () => {
+        const mockData = { id: 1, name: 'Test' };
+        render(<{{ component.name }}Detail data={mockData} />);
+        expect(screen.getByText(/Test/i)).toBeInTheDocument();
+    });
+
+    it('fetches data if no props are provided', async () => {
+        render(<{{ component.name }}Detail id={1} />);
+        expect(await screen.findByText(/Loading/i)).toBeInTheDocument();
+    });
+});

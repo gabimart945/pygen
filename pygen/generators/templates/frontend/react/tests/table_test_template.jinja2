@@ -1,0 +1,24 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import {{ component.name }}Table from '../components/{{ component.name }}Table';
+
+describe('{{ component.name }}Table Component Tests', () => {
+    it('renders without crashing', () => {
+        render(<{{ component.name }}Table />);
+        expect(screen.getByText(/{{ component.name }}/i)).toBeInTheDocument();
+    });
+
+    it('handles data props correctly', () => {
+        const mockData = [{ id: 1, name: 'Test' }];
+        render(<{{ component.name }}Table data={mockData} />);
+        expect(screen.getByText(/Test/i)).toBeInTheDocument();
+    });
+
+    it('triggers onEdit callback', () => {
+        const mockEdit = jest.fn();
+        const mockData = [{ id: 1, name: 'Test' }];
+        render(<{{ component.name }}Table data={mockData} onEdit={mockEdit} />);
+        fireEvent.click(screen.getByText(/Edit/i));
+        expect(mockEdit).toHaveBeenCalled();
+    });
+});

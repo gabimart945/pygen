@@ -1,0 +1,23 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import {{ component.name }}View from '../views/{{ component.name }}View';
+
+describe('{{ component.name }} View Tests', () => {
+    it('renders the main table', () => {
+        render(<{{ component.name }}View />);
+        expect(screen.getByText(/{{ component.name }} View/i)).toBeInTheDocument();
+    });
+
+    it('opens the form modal on Add New click', () => {
+        render(<{{ component.name }}View />);
+        fireEvent.click(screen.getByText(/Add New {{ component.name }}/i));
+        expect(screen.getByText(/Create {{ component.name }}/i)).toBeInTheDocument();
+    });
+
+    {% for relationship in component.relationships %}
+    it('renders related entity tabs for {{ relationship.target }}', () => {
+        render(<{{ component.name }}View />);
+        expect(screen.getByText(/{{ relationship.target }}/i)).toBeInTheDocument();
+    });
+    {% endfor %}
+});

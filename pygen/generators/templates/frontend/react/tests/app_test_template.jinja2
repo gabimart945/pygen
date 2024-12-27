@@ -1,0 +1,30 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import App from '../App';
+
+{% for component in components %}
+import {{ component.name }}View from '../views/{{ component.name }}View';
+{% endfor %}
+
+describe('App Component Tests', () => {
+  it('renders the App component without crashing', () => {
+    render(
+      <Router>
+        <App />
+      </Router>
+    );
+    expect(screen.getByText(/App/i)).toBeInTheDocument();
+  });
+
+  {% for component in components %}
+  it('renders the {{ component.name }}View route', () => {
+    render(
+      <Router>
+        <{{ component.name }}View />
+      </Router>
+    );
+    expect(screen.getByText(/{{ component.name }} View/i)).toBeInTheDocument();
+  });
+  {% endfor %}
+});
