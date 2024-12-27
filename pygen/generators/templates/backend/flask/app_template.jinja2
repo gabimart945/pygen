@@ -6,8 +6,40 @@ from flask_migrate import Migrate
 from app.controllers.{{ entity.name.lower() }}_controller import {{ entity.name.lower() }}_bp
 {% endfor %}
 
+
+
 def create_app(config_name='default'):
     app = Flask(__name__)
+
+    @app.after_request
+    def add_security_headers(response):
+        # Prevents Xss attacks
+        response.headers["X-Content-Type-Options"] = "nosniff"
+
+        # Uncomment the following lines if HTTPS is enforced
+        # Enforce HTTPS (HSTS)
+        # response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+        # Protection against clickjacking attacks
+        response.headers["X-Frame-Options"] = "DENY"
+
+        # Prevents MIME-type sniffing
+        response.headers["X-Content-Security-Policy"] = "default-src 'self'"
+
+        # Protection against XSS attacks
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+
+        # Refferer-Policy header to prevent leaking of sensitive data
+        response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
+
+        # Permissions-Policy header to limit the capabilities of the browser
+        # Limits the use of features such as geolocation, camera, microphone, etc.
+        response.headers["Permissions-Policy"] = (
+            "accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+        )
+
+        return response
+
     if config_name == 'testing':
         app.config.from_object('config.TestingConfig')
     else:

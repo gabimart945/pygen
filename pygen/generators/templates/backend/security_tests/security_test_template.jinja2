@@ -1,39 +1,57 @@
 import pytest
 import requests
 
-BASE_URL = "http://127.0.0.1:5000/api/{{ entity.name.lower() }}s"
+BASE_URL = "http://127.0.0.1:5000/api/{{ entity.name.lower() }}s/"
 
-def test_cors_headers():
-    response = requests.options(BASE_URL)
-    assert "Access-Control-Allow-Origin" in response.headers
-    assert response.headers["Access-Control-Allow-Origin"] == "*"
+@pytest.fixture(scope="module")
+def api_client():
+    """Fixture to provide a reusable API client."""
+    return requests
 
-def test_https_enforced():
-    response = requests.get(BASE_URL)
-    assert "Strict-Transport-Security" in response.headers
+def test_cors_headers(api_client):
+    response = api_client.options(BASE_URL)
+    assert response.status_code == 200, "CORS preflight request failed."
+    assert "Access-Control-Allow-Origin" in response.headers, "Missing CORS header."
+    assert response.headers["Access-Control-Allow-Origin"] == "http://localhost:3000", "Invalid CORS header value."
 
-def test_sql_injection_protection():
-    payload = {"id": "' OR '1'='1"}
-    response = requests.post(BASE_URL, json=payload)
-    assert response.status_code == 400  # Expecting bad request if properly handled
+# Uncomment the following test if HTTPS is enforced
+#def test_hsts_header(api_client):
+#    response = api_client.get(BASE_URL)
+#    assert "Strict-Transport-Security" in response.headers, "Missing HTTPS enforcement header."
+#    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains; preload", "Invalid HSTS header value."
 
-def test_xss_protection():
-    response = requests.get(BASE_URL)
-    assert "X-Content-Type-Options" in response.headers
-    assert response.headers["X-Content-Type-Options"] == "nosniff"
 
-# Add tests for each CRUD endpoint
-def test_get_all_{{ entity.name.lower() }}s():
-    response = requests.get(BASE_URL)
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+def test_x_frame_options_header(api_client):
+    response = api_client.get(BASE_URL)
+    assert "X-Frame-Options" in response.headers, "Missing X-Frame-Options header."
+    assert response.headers["X-Frame-Options"] == "DENY", "Invalid X-Frame-Options header value."
 
-def test_create_{{ entity.name.lower() }}():
-    payload = {"name": "Test"}
-    response = requests.post(BASE_URL, json=payload)
-    assert response.status_code == 201 or response.status_code == 400  # Validate input handling
+def test_x_content_type_options_header(api_client):
+    response = api_client.get(BASE_URL)
+    assert "X-Content-Type-Options" in response.headers, "Missing X-Content-Type-Options header."
+    assert response.headers["X-Content-Type-Options"] == "nosniff", "Invalid X-Content-Type-Options header value."
 
-def test_invalid_payload_{{ entity.name.lower() }}():
-    payload = {"invalid_field": "Invalid"}
-    response = requests.post(BASE_URL, json=payload)
-    assert response.status_code == 400  # Validate rejection of invalid data
+def test_referrer_policy_header(api_client):
+    response = api_client.get(BASE_URL)
+    assert "Referrer-Policy" in response.headers, "Missing Referrer-Policy header."
+    assert response.headers["Referrer-Policy"] == "no-referrer-when-downgrade", "Invalid Referrer-Policy header value."
+
+def test_permissions_policy_header(api_client):
+    response = api_client.get(BASE_URL)
+    assert "Permissions-Policy" in response.headers, "Missing Permissions-Policy header."
+    assert response.headers["Permissions-Policy"] == "accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()", "Invalid Permissions-Policy header value."
+
+def test_sql_injection_protection(api_client):
+    {% for field in entity.fields %}
+    {% if field.type == "db.String(255)" %}
+    payload = {"{{ field.name }}": "' OR '1'='1"}  # Test on a db.String field
+    response = api_client.post(BASE_URL, json=payload)
+    assert response.status_code in [400], "SQL Injection not properly handled for field '{{ field.name }}'."
+    {% endif %}
+    {% endfor %}
+
+def test_xss_protection(api_client):
+    response = api_client.get(BASE_URL)
+    assert response.status_code != 500, "Unexpected server error."
+    assert "X-Content-Type-Options" in response.headers, "Missing XSS protection header."
+    assert response.headers["X-Content-Type-Options"] == "nosniff", "Invalid XSS protection header value."

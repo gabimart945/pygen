@@ -27,7 +27,7 @@ def test_create_{{ entity.name.lower() }}(test_client):
     payload = {
         # Replace with sample data for the entity
     }
-    response = test_client.post('/api/{{ entity.name.lower() }}s', json=payload)
+    response = test_client.post('/api/{{ entity.name.lower() }}s/', json=payload)
     assert response.status_code == 201
     assert response.json['id'] is not None
 
@@ -35,7 +35,7 @@ def test_get_{{ entity.name.lower() }}_list(test_client):
     """
     Test retrieving the list of {{ entity.name }} records.
     """
-    response = test_client.get('/api/{{ entity.name.lower() }}s')
+    response = test_client.get('/api/{{ entity.name.lower() }}s/')
     assert response.status_code == 200
     assert isinstance(response.json, list)
 
