@@ -2,7 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 
 
-class BackendTestGenerator:
+class FlaskTestGenerator:
     def __init__(self, config, psm_model, tests_path):
         """
         Initializes the BackendTestGenerator.
@@ -15,7 +15,7 @@ class BackendTestGenerator:
         self._config = config
         self._psm_model = psm_model
         self._tests_path = tests_path
-        self._templates_path = "pygen/generators/templates/backend/tests"
+        self._templates_path = "pygen/generators/templates/backend/flask/tests"
         self._env = Environment(loader=FileSystemLoader(self._templates_path))
 
     def generate(self):

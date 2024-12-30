@@ -44,7 +44,7 @@ def test_permissions_policy_header(api_client):
 def test_sql_injection_protection(api_client):
     {% for field in entity.fields %}
     {% if field.type == "db.String(255)" %}
-    payload = {"{{ field.name }}": "' OR '1'='1"}  # Test on a db.String field
+    payload = {"{{ field.name }}": "' OR '1'='1"}
     response = api_client.post(BASE_URL, json=payload)
     assert response.status_code in [400], "SQL Injection not properly handled for field '{{ field.name }}'."
     {% endif %}

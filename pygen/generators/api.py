@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from jinja2 import Environment, FileSystemLoader
 import os
 
-from pygen.generators.backend_test_generator import BackendTestGenerator, SecurityTestGenerator, \
+from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
     IntegrationTestGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
@@ -378,7 +378,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
         return type_mapping.get(pim_type, "db.String(255)")
 
     def _generate_tests(self, path):
-        unit_test_generator = BackendTestGenerator(self._config, self._psm_model, path + '/unit')
+        unit_test_generator = FlaskTestGenerator(self._config, self._psm_model, path + '/unit')
         unit_test_generator.generate()
         integration_test_generator = IntegrationTestGenerator(self._config, self._psm_model, path + '/integration')
         integration_test_generator.generate()
