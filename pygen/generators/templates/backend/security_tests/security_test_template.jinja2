@@ -1,7 +1,32 @@
 import pytest
 import requests
+from app import create_app
+from multiprocessing import Process
+import time
 
 BASE_URL = "http://127.0.0.1:5000/api/{{ entity.name.lower() }}s/"
+
+def run_app():
+    """
+    Runs the Flask app. This function must be at the global scope for multiprocessing compatibility.
+    """
+    app = create_app("testing")  # Cambia "testing" por la configuración de pruebas que uses
+    app.run('0.0.0.0', port=5000)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def start_flask_server():
+    """
+    Starts the Flask application in a separate process.
+    """
+    process = Process(target=run_app)
+    process.start()
+    time.sleep(2)  # Espera a que el servidor se inicie
+
+    yield
+
+    process.terminate()
+    process.join()
 
 @pytest.fixture(scope="module")
 def api_client():
