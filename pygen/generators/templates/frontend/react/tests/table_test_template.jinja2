@@ -1,24 +1,155 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import axios from 'axios';
 import {{ component.name }}Table from '../components/{{ component.name }}Table';
 
+jest.mock('axios'); // Mock axios to avoid real HTTP requests
+
 describe('{{ component.name }}Table Component Tests', () => {
-    it('renders without crashing', () => {
+    it('renders loading state initially', () => {
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            },
+        ];
+        axios.get.mockResolvedValueOnce({ data: mockData });
         render(<{{ component.name }}Table />);
-        expect(screen.getByText(/{{ component.name }}/i)).toBeInTheDocument();
+        expect(screen.getByText(/Loading/i)).toBeInTheDocument();
     });
 
-    it('handles data props correctly', () => {
-        const mockData = [{ id: 1, name: 'Test' }];
+    it('renders error state on API failure', async () => {
+        axios.get.mockRejectedValueOnce(new Error('Error fetching data'));
+        render(<{{ component.name }}Table />);
+        await waitFor(() => {
+            expect(screen.getByText(/Error:/i)).toBeInTheDocument();
+        });
+    });
+
+    it('renders data correctly when passed as props', () => {
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            }
+        ];
         render(<{{ component.name }}Table data={mockData} />);
-        expect(screen.getByText(/Test/i)).toBeInTheDocument();
+        {% for field in component.fields %}
+        expect(screen.getByText({{
+            '"example_' ~ loop.index ~ '"' if field.type == "text" else
+            10 if field.type == "number" else
+            '"2023-01-2"' if field.type == "date" else
+            '"unsupported"'
+        }})).toBeInTheDocument();
+        {% endfor %}
     });
 
-    it('triggers onEdit callback', () => {
+    it('fetches data when no props are provided', async () => {
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            },
+        ];
+        axios.get.mockResolvedValueOnce({ data: mockData });
+
+        render(<{{ component.name }}Table />);
+        await waitFor(() => {
+            {% for field in component.fields %}
+            expect(screen.getByText({{
+                '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                loop.index * 10 if field.type == "number" else
+                '"2023-01-2"' if field.type == "date" else
+                '"unsupported"'
+            }})).toBeInTheDocument();
+            {% endfor %}
+        });
+    });
+
+    it('triggers onEdit callback when Edit is clicked', () => {
         const mockEdit = jest.fn();
-        const mockData = [{ id: 1, name: 'Test' }];
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            },
+        ];
         render(<{{ component.name }}Table data={mockData} onEdit={mockEdit} />);
         fireEvent.click(screen.getByText(/Edit/i));
-        expect(mockEdit).toHaveBeenCalled();
+        expect(mockEdit).toHaveBeenCalledWith(mockData[0]);
+    });
+
+    it('triggers onDelete callback when Delete is clicked', () => {
+        const mockDelete = jest.fn();
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            },
+        ];
+        render(<{{ component.name }}Table data={mockData} onDelete={mockDelete} />);
+        fireEvent.click(screen.getByText(/Delete/i));
+        expect(mockDelete).toHaveBeenCalledWith(mockData[0].id);
+    });
+
+    it('triggers onSelect callback when a row is clicked', () => {
+        const mockSelect = jest.fn();
+        const mockData = [
+            {
+                {% for field in component.fields %}
+                "{{ field.name }}": {{
+                    '"example_' ~ loop.index ~ '"' if field.type == "text" else
+                    loop.index * 10 if field.type == "number" else
+                    '"2023-01-2"' if field.type == "date" else
+                    'true' if field.type == "checkbox" and loop.index % 2 == 0 else
+                    'false' if field.type == "checkbox" else
+                    '"unsupported"'
+                }},
+                {% endfor %}
+            },
+        ];
+        render(<{{ component.name }}Table data={mockData} onSelect={mockSelect} />);
+        fireEvent.click(screen.getByText(/example_1/i));
+        expect(mockSelect).toHaveBeenCalledWith(mockData[0]);
     });
 });

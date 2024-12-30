@@ -167,7 +167,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Generate components for each entity
         for component in self._psm_model.components:
-            for view in ["Table", "Form", "Detail"]:
+            for view in ["Table", "Form"]:
                 try:
                     # Load the template for React components
                     template = env.get_template(f"{view.lower()}_template.jinja2")

@@ -36,7 +36,7 @@ class ReactTestGenerator:
         Args:
             component (PSMComponent): The component for which tests will be generated.
         """
-        for view in ["Table", "Form", "Detail"]:
+        for view in ["Table", "Form"]:
             template = self._env.get_template(f"{view.lower()}_test_template.jinja2")
             rendered = template.render(component=component.to_dict())
             file_path = os.path.join(self._tests_path, f"{component.name}{view}.test.js")

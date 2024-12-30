@@ -1,68 +1,56 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import App from '../App';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 {% for component in components %}
-import {{ component.name }}Table from '../components/{{ component.name }}Table';
-import {{ component.name }}Form from '../components/{{ component.name }}Form';
-import {{ component.name }}View from '../views/{{ component.name }}View';
-import {{ component.name }}Detail from '../components/{{ component.name }}Detail';
+import {{ component.name }}Table from './components/{{ component.name }}Table';
+import {{ component.name }}Form from './components/{{ component.name }}Form';
+import {{ component.name }}View from './views/{{ component.name }}View';
 {% endfor %}
 
-describe('App Component Tests', () => {
-  it('renders the App component without crashing', () => {
-    render(
-      <Router>
-        <App />
-      </Router>
-    );
-    expect(screen.getByText(/App/i)).toBeInTheDocument();
-  });
-
-  {% for component in components %}
-  it('renders {{ component.name }}View route', () => {
-    render(
-      <Router>
+function App() {
+  return (
+    <Router>
+      <div className="App">
+        {/* Navigation Bar */}
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <div className="container-fluid">
+            <Link className="navbar-brand" to="/">Home</Link>
+            <button
+              className="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav">
+                {% for component in components %}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/{{ component.name | lower }}/view">{{ component.name }}</Link>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </nav>
         <Routes>
+          {% for component in components %}
+          {/* Main Views */}
           <Route path="/{{ component.name | lower }}/view" element={<{{ component.name }}View />} />
-        </Routes>
-      </Router>
-    );
-    expect(screen.getByText(/{{ component.name }} View/i)).toBeInTheDocument();
-  });
 
-  it('renders {{ component.name }}Table route', () => {
-    render(
-      <Router>
-        <Routes>
+          {/* List, Form, and Detail Routes */}
           <Route path="/{{ component.name | lower }}/table" element={<{{ component.name }}Table />} />
-        </Routes>
-      </Router>
-    );
-    expect(screen.getByText(/Actions/i)).toBeInTheDocument();
-  });
-
-  it('renders {{ component.name }}Form route', () => {
-    render(
-      <Router>
-        <Routes>
           <Route path="/{{ component.name | lower }}/form" element={<{{ component.name }}Form id={null} />} />
+          <Route path="/{{ component.name | lower }}/form/:id" element={<{{ component.name }}Form />} />
+          {% endfor %}
         </Routes>
-      </Router>
-    );
-    expect(screen.getByText(/Submit/i)).toBeInTheDocument();
-  });
+      </div>
+    </Router>
+  );
+}
 
-  it('renders {{ component.name }}Detail route', () => {
-    render(
-      <Router>
-        <Routes>
-          <Route path="/{{ component.name | lower }}/detail/:id" element={<{{ component.name }}Detail />} />
-        </Routes>
-      </Router>
-    );
-    expect(screen.getByText(/Details/i)).toBeInTheDocument();
-  });
-  {% endfor %}
-});
+export default App;
