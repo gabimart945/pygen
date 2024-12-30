@@ -284,7 +284,6 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
           }
         }
 
-
         with open(os.path.join(self._path, "package.json"), "w") as file:
             import json
             file.write(json.dumps(package_json_content, indent=2))
