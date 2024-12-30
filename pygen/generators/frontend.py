@@ -3,6 +3,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 import subprocess
 
+from pygen.generators.dockerfile_generator import FrontendDockerfileGenerator
 from pygen.generators.frontend_test_generator import ReactTestGenerator
 from pygen.models.cim import CimModel
 from pygen.models.frontend_pim import PIMModel
@@ -153,6 +154,12 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         self._generate_components()
         self._generate_views()
         self._test_generator.generate()
+        config = {
+            "base_image": "node:16-alpine",
+            "build_dir": "build"
+        }
+        generator = FrontendDockerfileGenerator(self._path, config)
+        generator.generate()
 
     def _generate_components(self):
         """

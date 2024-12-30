@@ -4,6 +4,7 @@ import os
 
 from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
     IntegrationTestGenerator
+from pygen.generators.dockerfile_generator import BackendDockerfileGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
 
@@ -23,6 +24,12 @@ class IBackendApiGenerator(ABC):
         self._generate_models(root_path + '/app/models')
         self._generate_schemas(root_path + '/app/schemas')
         self._generate_tests(root_path + '/tests')
+        config = {
+            "base_image": "python:3.9-slim",
+            "port": port
+        }
+        generator = BackendDockerfileGenerator(root_path, config)
+        generator.generate()
 
     @abstractmethod
     def _generate_project_files(self, root_path):
