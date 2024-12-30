@@ -52,10 +52,19 @@ class FrontendGenerator(ABC):
                 if relationship.source == cim_entity.name:
                     if relationship.type == "composition":
                         # Handle one-to-many relationships as nested tables
-                        pim_entity.add_relationship(relationship.target, "table")
+                        pim_entity.add_relationship(relationship.target, "nested_table")
                     elif relationship.type == "aggregation":
                         # Handle many-to-one relationships as dropdowns
-                        pim_entity.add_relationship(relationship.target, "dropdown")
+                        pim_entity.add_relationship(relationship.target, "select_dropdown")
+
+                # Ensure bidirectional relationships are added
+                if relationship.target == cim_entity.name:
+                    if relationship.type == "composition":
+                        # Handle reverse of one-to-many as parent reference
+                        pim_entity.add_relationship(relationship.source, "parent_reference")
+                    elif relationship.type == "aggregation":
+                        # Handle reverse of many-to-one as related item
+                        pim_entity.add_relationship(relationship.source, "related_item")
 
     @abstractmethod
     def _transform_pim_to_psm(self):
@@ -69,8 +78,7 @@ class FrontendGenerator(ABC):
         """
         Abstract method to generate the frontend application using Jinja2 templates.
 
-        Args:
-            output_path (str): The directory path where the frontend files will be generated.
+
         """
         raise NotImplementedError
 
@@ -113,7 +121,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
             component.form_component = True
             component.detail_component = True
 
-    def _map_type_to_react(self, pim_type: str) -> str:
+    def _map_type_to_react(self, pim_type):
         """
         Maps PIM field types to React-compatible input types.
 
@@ -131,7 +139,8 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         }
         return type_mapping.get(pim_type, "text")
 
-    def _map_relationship_to_react(self, relationship_type: str) -> str:
+
+    def _map_relationship_to_react(self, relationship_type):
         """
         Maps PIM relationship types to React components.
 
@@ -142,11 +151,12 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
             str: React-compatible component type.
         """
         relationship_mapping = {
-            "table": "nestedTable",
-            "dropdown": "selectDropdown",
-            "multi-select": "multiSelect"
+            "nested_table": "NestedTableComponent",
+            "select_dropdown": "SelectDropdownComponent",
+            "parent_reference": "ParentReferenceComponent",
+            "related_item": "RelatedItemComponent",
         }
-        return relationship_mapping.get(relationship_type, "nestedTable")
+        return relationship_mapping.get(relationship_type, "DefaultRelationshipComponent")
 
     def generate(self):
         self._generate_app()
