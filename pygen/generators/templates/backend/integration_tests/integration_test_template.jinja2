@@ -25,7 +25,9 @@ def test_create_{{ entity.name.lower() }}(test_client):
     Test creating a new {{ entity.name }}.
     """
     payload = {
-        # Replace with sample data for the entity
+        {% for field in entity.fields if field.foreign_key %}
+        "{{ field.name }}": 1,  # Replace '1' with a valid foreign key value if necessary
+        {% endfor %}
     }
     response = test_client.post('/api/{{ entity.name.lower() }}s/', json=payload)
     assert response.status_code == 201
@@ -45,7 +47,9 @@ def test_update_{{ entity.name.lower() }}(test_client):
     """
     # Replace with a valid ID after creation
     update_payload = {
-        # Replace with updated sample data
+        {% for field in entity.fields if field.foreign_key %}
+        "{{ field.name }}": 1,  # Replace '1' with a valid foreign key value if necessary
+        {% endfor %}
     }
     response = test_client.put('/api/{{ entity.name.lower() }}s/1', json=update_payload)
     assert response.status_code == 200
