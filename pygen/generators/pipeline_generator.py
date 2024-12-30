@@ -203,7 +203,7 @@ class AzureDevOpsPipelineGenerator(PipelineGenerator):
         print(f"Azure DevOps frontend CI pipeline configuration generated at {output_path}")
 
 
-class GitHubActionsPipelineGenerator(PipelineGenerator):
+class GithubActionsPipelineGenerator(PipelineGenerator):
     """
     CI pipeline generator for GitHub Actions.
     """

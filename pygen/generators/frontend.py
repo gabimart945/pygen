@@ -5,6 +5,7 @@ import subprocess
 
 from pygen.generators.dockerfile_generator import FrontendDockerfileGenerator
 from pygen.generators.frontend_test_generator import ReactTestGenerator
+from pygen.generators.pipeline_generator import AzureDevOpsPipelineGenerator, GithubActionsPipelineGenerator
 from pygen.models.cim import CimModel
 from pygen.models.frontend_pim import PIMModel
 from pygen.models.react_psm import PSMModel
@@ -26,6 +27,12 @@ class FrontendGenerator(ABC):
         self._pim_model = None  # Will be populated after the CIM to PIM transformation
         self._transform_cim_to_pim()
         self._path = path
+        if self._config.cicd == 'azure':
+            self._pipeline_generator = AzureDevOpsPipelineGenerator()
+        elif self._config.cicd == 'github':
+            self._pipeline_generator = GithubActionsPipelineGenerator()
+        else:
+            self._pipeline_generator = None
 
     def _transform_cim_to_pim(self):
         """
@@ -160,6 +167,8 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         }
         generator = FrontendDockerfileGenerator(self._path, config)
         generator.generate()
+        if self._pipeline_generator:
+            self._pipeline_generator.generate_frontend_pipeline(os.path.join(self._path,"frontend-ci-pipeline.yml"))
 
     def _generate_components(self):
         """

@@ -5,6 +5,7 @@ import os
 from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
     IntegrationTestGenerator
 from pygen.generators.dockerfile_generator import BackendDockerfileGenerator
+from pygen.generators.pipeline_generator import AzureDevOpsPipelineGenerator, GithubActionsPipelineGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
 
@@ -13,6 +14,13 @@ class IBackendApiGenerator(ABC):
     def __init__(self, config):
         self._config = config
         self._psm_model = None
+        if self._config.cicd == 'azure':
+            self._pipeline_generator = AzureDevOpsPipelineGenerator()
+        elif self._config.cicd == 'github':
+            self._pipeline_generator = GithubActionsPipelineGenerator()
+        else:
+            self._pipeline_generator = None
+
 
     def generate(self, model, root_path, port=5000):
         self._transform_model(model)
@@ -30,6 +38,8 @@ class IBackendApiGenerator(ABC):
         }
         generator = BackendDockerfileGenerator(root_path, config)
         generator.generate()
+        if self._pipeline_generator:
+            self._pipeline_generator.generate_frontend_pipeline(os.path.join(root_path,"backend-ci-pipeline.yml"))
 
     @abstractmethod
     def _generate_project_files(self, root_path):
