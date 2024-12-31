@@ -238,6 +238,7 @@ const {{ component.name }}View = () => {
             {/* Related entities section */}
             <Tabs activeKey={activeTab} onSelect={handleTabChange} className="my-3">
                 {% for relationship in component.relationships %}
+                {% if relationship.type == 'NestedTableComponent' %}
                 <Tab eventKey="{{ relationship.target | lower }}" title="{{ relationship.target }}">
                     <div className="related-table">
                         {relatedData["{{ relationship.target | lower }}"] ? (
@@ -264,6 +265,7 @@ const {{ component.name }}View = () => {
 
                     </div>
                 </Tab>
+                {% endif %}
                 {% endfor %}
             </Tabs>
 
