@@ -66,7 +66,7 @@ def create_app(config_name='default'):
     app.register_blueprint({{ entity.name.lower() }}_bp, url_prefix='/api/{{ entity.name.lower() }}s')
     {% endfor %}
     {% if config.auth == "jwt" %}
-    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
     {% endif %}
 
     with app.app_context():
