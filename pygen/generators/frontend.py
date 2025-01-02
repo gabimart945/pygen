@@ -266,7 +266,6 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
               "name": "react-frontend",
               "version": "0.1.0",
               "private": True,
-              "type": "module",
               "dependencies": {
                 "axios": "^1.5.0",
                 "bootstrap": "^5.3.1",

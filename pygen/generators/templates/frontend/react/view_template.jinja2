@@ -101,7 +101,7 @@ const {{ component.name }}View = () => {
     };
 
     const confirmDelete = () => {
-        api.delete(`$/{{ component.name | lower }}s/${deleteItemId}`)
+        api.delete(`/{{ component.name | lower }}s/${deleteItemId}`)
            .then(() => {
                console.log('Item deleted');
                setShowDeleteConfirm(false);

@@ -42,7 +42,7 @@ def test_get_{{ entity.name.lower() }}_list(test_client):
     Test retrieving the list of {{ entity.name }} records.
     """
     response = test_client.get('/api/{{ entity.name.lower() }}s/')
-    {% if config.auth == "jwt" %}
+   {% if config.auth == "jwt" %}
     assert response.status_code == 401
     {% else %}
     assert response.status_code == 200
@@ -73,5 +73,5 @@ def test_delete_{{ entity.name.lower() }}(test_client):
     {% if config.auth == "jwt" %}
     assert response.status_code == 401
     {% else %}
-    assert response.status_code == 200
+    assert response.status_code == 204
     {% endif %}
