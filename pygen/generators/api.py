@@ -8,12 +8,34 @@ from pygen.models.flask_psm import PsmModel, Entity
 
 
 class IBackendApiGenerator(ABC):
+    """
+    Abstract base class for backend API generators. This class defines the interface
+    and required methods for generating various components of a backend API.
+
+    Attributes:
+        _config (object): Configuration object containing generation settings.
+        _psm_model (PsmModel): The transformed Platform-Specific Model (PSM) for the backend API.
+    """
 
     def __init__(self, config):
+        """
+        Initializes the API generator with a given configuration.
+
+        Args:
+            config (object): The configuration object for the API generation process.
+        """
         self._config = config
         self._psm_model = None
 
     def generate(self, model, root_path, port=5000):
+        """
+        Generates the backend API by transforming the model and generating necessary files.
+
+        Args:
+            model (object): The input Platform-Independent Model (PIM).
+            root_path (str): The root directory where the project will be generated.
+            port (int): The port number for the service. Default is 5000.
+        """
         self._transform_model(model)
         os.environ['SERVICE_PORT'] = str(port)
         self._generate_project_files(root_path)
@@ -30,44 +52,114 @@ class IBackendApiGenerator(ABC):
 
     @abstractmethod
     def _generate_project_files(self, root_path):
+        """
+        Abstract method to generate the base project structure and configuration files.
+
+        Args:
+            root_path (str): The root directory where the project will be generated.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_app(self, path, port):
+        """
+        Abstract method to generate the `__init__.py` file for the Flask application.
+
+        Args:
+            path (str): Path to the app directory.
+            port (int): The port number for the Flask application.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_controllers(self, path):
+        """
+        Abstract method to generate controller files for the backend API.
+
+        Args:
+            path (str): Path to the controllers directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_services(self, path):
+        """
+        Abstract method to generate service files for the backend API.
+
+        Args:
+            path (str): Path to the services directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_models(self, path):
+        """
+        Abstract method to generate model files for the backend API.
+
+        Args:
+            path (str): Path to the models directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_schemas(self, path):
+        """
+        Abstract method to generate schema files for the backend API.
+
+        Args:
+            path (str): Path to the schemas directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _transform_model(self, model):
+        """
+        Abstract method to transform the Platform-Independent Model (PIM)
+        into a Platform-Specific Model (PSM).
+
+        Args:
+            model (object): The input PIM to transform.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_tests(self, path):
+        """
+        Abstract method to generate unit, integration, and security tests.
+
+        Args:
+            path (str): Path to the tests directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_authentication_files(self, path):
+        """
+        Abstract method to generate authentication-related files.
+
+        Args:
+            path (str): Path to the root project directory.
+        """
         raise NotImplementedError
 
 
 class FlaskApiGenerator(IBackendApiGenerator):
+    """
+    Concrete implementation of IBackendApiGenerator for Flask-based APIs.
+    This class provides methods for generating Flask-specific project files,
+    application components, and tests.
+
+    Attributes:
+        _templates_path (str): Path to the directory containing Jinja2 templates.
+    """
 
     def __init__(self, config):
+        """
+        Initializes the Flask API generator with a given configuration.
+
+        Args:
+            config (object): The configuration object for the Flask API generation process.
+        """
         super().__init__(config)
         self._templates_path = "pygen/generators/templates/backend/flask"
 
