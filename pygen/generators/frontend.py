@@ -255,20 +255,22 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
           "version": "0.1.0",
           "private": True,
           "dependencies": {
-            "react": "^18.0.0",
-            "react-dom": "^18.0.0",
-            "react-scripts": "5.0.0",
-            "axios": "^0.21.1",
-            "react-router-dom": "^6.0.0",
-            "react-bootstrap": "^2.5.0",
-            "bootstrap": "^5.3.0"
+            "react": "^18.2.0",
+            "react-dom": "^18.2.0",
+            "react-scripts": "5.0.1",
+            "axios": "^1.5.0",
+            "react-router-dom": "^6.14.0",
+            "react-bootstrap": "^2.8.0",
+            "bootstrap": "^5.3.1"
           },
           "devDependencies": {
-            "@testing-library/react": "^14.0.0",
+            "@testing-library/react": "^14.1.0",
             "@testing-library/jest-dom": "^6.0.0",
-            "@testing-library/user-event": "^14.0.0",
-            "jest": "^29.0.0",
-            "jest-environment-jsdom": "^29.0.0"
+            "@testing-library/user-event": "^14.5.0",
+            "jest": "^29.7.0",
+            "jest-environment-jsdom": "^29.7.0",
+            "eslint": "^8.57.1",
+            "rimraf": "^4.0.0"
           },
           "scripts": {
             "start": "react-scripts start",
