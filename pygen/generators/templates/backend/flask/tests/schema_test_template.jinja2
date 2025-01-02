@@ -1,0 +1,85 @@
+import unittest
+from marshmallow import ValidationError
+from app.schemas.{{ entity.name.lower() }}_schema import {{ entity.name }}Schema
+
+class Test{{ entity.name }}Schema(unittest.TestCase):
+    """
+    Unit test class for the {{ entity.name }}Schema.
+
+    This class tests the functionality of the {{ entity.name }}Schema, including data validation,
+    serialization, and deserialization.
+    """
+
+    def setUp(self):
+        """
+        Set up the testing environment.
+
+        This method initializes the schema instance for testing.
+        """
+        self.schema = {{ entity.name }}Schema()
+
+    def test_valid_data(self):
+        """
+        Test that valid data passes schema validation.
+
+        Ensures that the schema correctly serializes and deserializes valid input data.
+        """
+        valid_data = {
+            {% for field in entity.fields %}
+            "{{ field.name }}": {{
+                '"example_text"' if field.type == "db.String(255)" else
+                '1' if field.type == "db.Integer" else
+                'True' if field.type == "db.Boolean" else
+                '"2023-01-01"' if field.type == "db.Date" else
+                '"2023-01-01T00:00:00"' if field.type == "db.DateTime" else
+                '"unsupported_field_type"'
+            }},
+            {% endfor %}
+        }
+
+        try:
+            deserialized_data = self.schema.load(valid_data)
+        except ValidationError as e:
+            self.fail(f"ValidationError raised unexpectedly: {e}")
+
+        serialized_data = self.schema.dump(deserialized_data)
+        self.assertEqual(serialized_data, valid_data)
+
+    def test_invalid_data(self):
+        """
+        Test that invalid data raises validation errors.
+
+        Ensures that the schema identifies and raises errors for invalid input data.
+        """
+        invalid_data = {
+            {% for field in entity.fields if field.type == "db.String(255)" %}
+            "{{ field.name }}": 123,  # Invalid type for string fields
+            {% endfor %}
+        }
+
+        with self.assertRaises(ValidationError):
+            self.schema.load(invalid_data)
+
+    {% for field in entity.fields if field.foreign_key %}
+    def test_missing_foreign_key(self):
+        """
+        Test that missing foreign key raises validation errors.
+
+        Ensures that the schema correctly identifies missing foreign key fields.
+        """
+        missing_fk_data = {
+            {% for field in entity.fields if not field.foreign_key %}
+            "{{ field.name }}": {{
+                '"example_text"' if field.type == "db.String(255)" else
+                '1' if field.type == "db.Integer" else
+                'True' if field.type == "db.Boolean" else
+                '"2023-01-01"' if field.type == "db.Date" else
+                '"2023-01-01T00:00:00"' if field.type == "db.DateTime" else
+                '"unsupported_field_type"'
+            }},
+            {% endfor %}
+        }
+
+        with self.assertRaises(ValidationError):
+            self.schema.load(missing_fk_data)
+    {% endfor %}

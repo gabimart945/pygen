@@ -2,57 +2,164 @@ from abc import ABC, abstractmethod
 from jinja2 import Environment, FileSystemLoader
 import os
 
+from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
+    IntegrationTestGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
 
 class IBackendApiGenerator(ABC):
+    """
+    Abstract base class for backend API generators. This class defines the interface
+    and required methods for generating various components of a backend API.
+
+    Attributes:
+        _config (object): Configuration object containing generation settings.
+        _psm_model (PsmModel): The transformed Platform-Specific Model (PSM) for the backend API.
+    """
 
     def __init__(self, config):
+        """
+        Initializes the API generator with a given configuration.
+
+        Args:
+            config (object): The configuration object for the API generation process.
+        """
         self._config = config
         self._psm_model = None
 
     def generate(self, model, root_path, port=5000):
+        """
+        Generates the backend API by transforming the model and generating necessary files.
+
+        Args:
+            model (object): The input Platform-Independent Model (PIM).
+            root_path (str): The root directory where the project will be generated.
+            port (int): The port number for the service. Default is 5000.
+        """
         self._transform_model(model)
-        os.environ['SERVICE_PORT'] = str(port)  # Configura el puerto en variables de entorno
+        os.environ['SERVICE_PORT'] = str(port)
         self._generate_project_files(root_path)
         self._generate_app(root_path + '/app', port)
         self._generate_controllers(root_path + '/app/controllers')
         self._generate_services(root_path + '/app/services')
         self._generate_models(root_path + '/app/models')
         self._generate_schemas(root_path + '/app/schemas')
+        self._generate_tests(root_path + '/tests')
+
+        # Si la autenticación es JWT, generamos los archivos adicionales
+        if self._config.auth == "jwt":
+            self._generate_authentication_files(root_path)
 
     @abstractmethod
     def _generate_project_files(self, root_path):
+        """
+        Abstract method to generate the base project structure and configuration files.
+
+        Args:
+            root_path (str): The root directory where the project will be generated.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_app(self, path, port):
+        """
+        Abstract method to generate the `__init__.py` file for the Flask application.
+
+        Args:
+            path (str): Path to the app directory.
+            port (int): The port number for the Flask application.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_controllers(self, path):
+        """
+        Abstract method to generate controller files for the backend API.
+
+        Args:
+            path (str): Path to the controllers directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_services(self, path):
+        """
+        Abstract method to generate service files for the backend API.
+
+        Args:
+            path (str): Path to the services directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_models(self, path):
+        """
+        Abstract method to generate model files for the backend API.
+
+        Args:
+            path (str): Path to the models directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _generate_schemas(self, path):
+        """
+        Abstract method to generate schema files for the backend API.
+
+        Args:
+            path (str): Path to the schemas directory.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _transform_model(self, model):
+        """
+        Abstract method to transform the Platform-Independent Model (PIM)
+        into a Platform-Specific Model (PSM).
+
+        Args:
+            model (object): The input PIM to transform.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _generate_tests(self, path):
+        """
+        Abstract method to generate unit, integration, and security tests.
+
+        Args:
+            path (str): Path to the tests directory.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _generate_authentication_files(self, path):
+        """
+        Abstract method to generate authentication-related files.
+
+        Args:
+            path (str): Path to the root project directory.
+        """
         raise NotImplementedError
 
 
 class FlaskApiGenerator(IBackendApiGenerator):
+    """
+    Concrete implementation of IBackendApiGenerator for Flask-based APIs.
+    This class provides methods for generating Flask-specific project files,
+    application components, and tests.
+
+    Attributes:
+        _templates_path (str): Path to the directory containing Jinja2 templates.
+    """
 
     def __init__(self, config):
+        """
+        Initializes the Flask API generator with a given configuration.
+
+        Args:
+            config (object): The configuration object for the Flask API generation process.
+        """
         super().__init__(config)
         self._templates_path = "pygen/generators/templates/backend/flask"
 
@@ -86,7 +193,13 @@ class FlaskApiGenerator(IBackendApiGenerator):
             "Flask",
             "Flask-Migrate",
             "Flask-SQLAlchemy",
-            "marshmallow"
+            "marshmallow",
+            "flask-cors",
+            "pytest",
+            "requests",
+            "pynt",
+            "Flask-JWT-Extended",
+            "cryptography",
         ]
 
         requirements_path = os.path.join(root_path, "requirements.txt")
@@ -97,7 +210,10 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Generate `config.py`
         config_template = env.get_template('config_template.jinja2')
-        config_content = config_template.render()
+        context = {
+            "config": self._config
+        }
+        config_content = config_template.render(context)
         config_path = os.path.join(root_path, "config.py")
 
         with open(config_path, "w") as config_file:
@@ -121,7 +237,8 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Context for rendering the template
         context = {
-            "entities": entities
+            "entities": entities,
+            "config": self._config,
         }
 
         # Render the template
@@ -155,7 +272,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
             template = env.get_template('controller_template.jinja2')
             context = {
                 "entity": entity,
-                "config": self._config.backend
+                "config": self._config
             }
             rendered_code = template.render(context)
 
@@ -263,7 +380,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         Args:
             env (Environment): The Jinja2 environment.
-            schemas_path (str): Path to the schemas directory.
+            schemas_path (str): Path to the schemas' directory.
             entity (Entity): The entity for which the schema is generated.
         """
         # Render the schema template
@@ -365,3 +482,46 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Return the mapped type or a default (e.g., db.String(255) for unknown types)
         return type_mapping.get(pim_type, "db.String(255)")
+
+    def _generate_tests(self, path):
+        unit_test_generator = FlaskTestGenerator(self._config, self._psm_model, path + '/unit')
+        unit_test_generator.generate()
+        integration_test_generator = IntegrationTestGenerator(self._config, self._psm_model, path + '/integration')
+        integration_test_generator.generate()
+        security_test_generator = SecurityTestGenerator(self._config, self._psm_model, path + '/security')
+        security_test_generator.generate()
+
+    def _generate_authentication_files(self, root_path):
+        """
+        Generates necessary files for JWT authentication.
+        """
+        auth_templates_path = os.path.join(self._templates_path, "jwt_auth")
+        env = Environment(loader=FileSystemLoader(auth_templates_path))
+
+        # Create directories if they don't exist
+        os.makedirs(os.path.join(root_path, "app/controllers"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/services"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/schemas"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/models"), exist_ok=True)
+
+        # Generate user model
+        user_model_template = env.get_template("user_model_template.jinja2")
+        with open(os.path.join(root_path, "app/models/user.py"), "w") as file:
+            file.write(user_model_template.render())
+
+        # Generate user schema
+        user_schema_template = env.get_template("user_schema_template.jinja2")
+        with open(os.path.join(root_path, "app/schemas/user_schema.py"), "w") as file:
+            file.write(user_schema_template.render())
+
+        # Generate auth service
+        auth_service_template = env.get_template("auth_service_template.jinja2")
+        with open(os.path.join(root_path, "app/services/auth_service.py"), "w") as file:
+            file.write(auth_service_template.render())
+
+        # Generate auth controller
+        auth_controller_template = env.get_template("auth_controller_template.jinja2")
+        with open(os.path.join(root_path, "app/controllers/auth_controller.py"), "w") as file:
+            file.write(auth_controller_template.render())
+
+        print("Authentication files generated successfully.")

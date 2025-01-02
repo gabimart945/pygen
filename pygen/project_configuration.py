@@ -294,7 +294,7 @@ class ProjectConfiguration(object):
         Raises:
             ValueError: If the authentication method is unsupported.
         """
-        if auth is None or auth in ["basic"]:
+        if auth is None or auth in ["jwt"]:
             self._auth = auth
         else:
             raise ValueError(f"Unsupported authentication method: {auth}")
@@ -347,7 +347,7 @@ class ProjectConfiguration(object):
 
         # Select authentication method
         print("\nSelect authentication method:")
-        auth = self._get_option(["none", "basic"])
+        auth = self._get_option(["none", "jwt"])
         if auth == "none":
             self.set_auth(None)
         else:

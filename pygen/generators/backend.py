@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pygen.generators.api import FlaskApiGenerator
-from pygen.models.backend_pim import PimModel, Entity, Attribute
+from pygen.models.backend_pim import PimModel, Entity
 
 
 class IBackendGenerator(ABC):

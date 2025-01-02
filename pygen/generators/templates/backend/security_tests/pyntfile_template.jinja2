@@ -1,0 +1,29 @@
+from pynt import task
+import os
+import subprocess
+
+@task()
+def install_requirements():
+    """
+    Install required dependencies for running tests.
+    """
+    print("Installing requirements...")
+    subprocess.run(["pip", "install", "-r", "requirements.txt"], cwd=os.getcwd())
+
+@task()
+def run_all_security_tests():
+    """
+    Run all security tests for all entities.
+    """
+    print("Running all security tests...")
+    subprocess.run(["pytest", "tests/security"], cwd=os.getcwd())
+
+{% for entity in model.entities %}
+@task()
+def run_{{ entity.name.lower() }}_security_tests():
+    """
+    Run security tests for the {{ entity.name }} controller.
+    """
+    print("Running security tests for {{ entity.name }}...")
+    subprocess.run(["pytest", f"tests/security/test_{{ entity.name.lower() }}_security.py"], cwd=os.getcwd())
+{% endfor %}

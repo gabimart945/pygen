@@ -1,3 +1,4 @@
+from marshmallow import ValidationError
 from app.models import db
 from app.models.{{ entity.name.lower() }} import {{ entity.name }}
 from app.schemas.{{ entity.name.lower() }}_schema import {{ entity.name }}Schema
@@ -14,18 +15,42 @@ class {{ entity.name }}Service:
         {% endfor %}
 
     def get_all(self):
+        """
+        Retrieves all records of {{ entity.name }}.
+
+        Returns:
+            list: A list of serialized {{ entity.name }} objects.
+        """
         items = {{ entity.name }}.query.all()
         return self._schema.dump(items, many=True)
 
     def get_by_id(self, id):
+        """
+        Retrieves a single {{ entity.name }} by its ID.
+
+        Args:
+            id (int): The ID of the {{ entity.name }} to retrieve.
+
+        Returns:
+            dict or None: A serialized {{ entity.name }} object if found, otherwise None.
+        """
         item = {{ entity.name }}.query.get(id)
         return self._schema.dump(item) if item else None
 
     def create(self, data):
         """
         Creates a new record after validating and deserializing the input data.
+
+        Returns:
+            tuple(dict or None, dict or None):
+            - First element: the created item (serialized) or None if validation failed.
+            - Second element: validation errors if any, otherwise None.
         """
-        loaded_data = self._schema.load(data)  # Validacion y deserializacion
+        try:
+            loaded_data = self._schema.load(data)  # Validation and deserialization
+        except ValidationError as err:
+            return None, err.messages
+
         new_item = {{ entity.name }}(**loaded_data)
         db.session.add(new_item)
         db.session.commit()
@@ -34,11 +59,29 @@ class {{ entity.name }}Service:
     def update(self, id, data):
         """
         Updates an existing record after validating and deserializing the input data.
+
+        Args:
+            id (int): The ID of the {{ entity.name }} to update.
+            data (dict): The data to update the record with.
+
+        Returns:
+            tuple(dict or None, dict or None):
+            - First element: the updated item (serialized) or None if it does not exist.
+            - Second element: validation errors or an error message if any, otherwise None.
         """
-        loaded_data = self._schema.load(data)  # Validacion y deserializacion
         item = {{ entity.name }}.query.get(id)
         if not item:
-            return None, None
+            return None, {'error': '{{ entity.name }} not found'}
+
+        try:
+            loaded_data = self._schema.load(data)  # Validation and deserialization
+        except ValidationError as err:
+            return None, err.messages
+
+        {% for relationship in entity.relationships %}
+        loaded_data.pop("{{ relationship.name }}", None)
+        {% endfor %}
+
         for key, value in loaded_data.items():
             setattr(item, key, value)
         db.session.commit()
@@ -46,7 +89,13 @@ class {{ entity.name }}Service:
 
     def delete(self, id):
         """
-        Deletes an existing record
+        Deletes an existing record by its ID.
+
+        Args:
+            id (int): The ID of the {{ entity.name }} to delete.
+
+        Returns:
+            bool: True if the record was deleted successfully, False if it does not exist.
         """
         item = {{ entity.name }}.query.get(id)
         if not item:
@@ -58,27 +107,52 @@ class {{ entity.name }}Service:
     {% for relationship in entity.relationships %}
     def get_{{ relationship.name.lower() }}s(self, id):
         """
-        Retrieves related {{ relationship.target.lower() }} records.
+        Retrieves related {{ relationship.target.lower() }} records for a given {{ entity.name }} ID.
+
+        Args:
+            id (int): The ID of the parent {{ entity.name }}.
+
+        Returns:
+            tuple(list or None, dict or None):
+            - First element: A list or single instance of serialized {{ relationship.target }} objects
+              (depending on the relationship type) or None if the parent {{ entity.name }} was not found.
+            - Second element: Error information if the parent {{ entity.name }} was not found, otherwise None.
         """
         item = {{ entity.name }}.query.get(id)
         if not item:
             return None, {'error': '{{ entity.name }} not found'}
         related_items = getattr(item, "{{ relationship.name }}")
-        return self._{{ relationship.target.lower() }}_schema.dump(related_items, many={{ "True" if relationship.type in ["one-to-many", "many-to-many"] else "False" }}), None
+        return self._{{ relationship.target.lower() }}_schema.dump(
+            related_items,
+            many={{ "True" if relationship.type in ["one-to-many", "many-to-many"] else "False" }}
+        ), None
 
     def add_{{ relationship.name.lower() }}(self, id, data):
         """
-        Adds a related {{ relationship.target.lower() }} record.
+        Adds a related {{ relationship.target.lower() }} record to a given {{ entity.name }}.
+
+        Args:
+            id (int): The ID of the parent {{ entity.name }}.
+            data (dict): The data to create the related record.
+
+        Returns:
+            tuple(dict or None, dict or None):
+            - First element: The newly created related record (serialized) or None if an error occurred.
+            - Second element: Validation errors or an error message if the parent was not found, otherwise None.
         """
         parent = {{ entity.name }}.query.get(id)
         if not parent:
             return None, {'error': '{{ entity.name }} not found'}
 
-        loaded_data = self._{{ relationship.target.lower() }}_schema.load(data)  # Validacion y deserializacion
+        try:
+            loaded_data = self._{{ relationship.target.lower() }}_schema.load(data)  # Validation and deserialization
+        except ValidationError as err:
+            return None, err.messages
+
         new_related_item = {{ relationship.target }}(**loaded_data)
         db.session.add(new_related_item)
 
-        # Añadir el nuevo elemento a la relacion
+        # Add the new item to the relationship
         if "{{ relationship.type }}" in ["one-to-many", "many-to-many"]:
             getattr(parent, "{{ relationship.name }}").append(new_related_item)
         elif "{{ relationship.type }}" in ["many-to-one", "one-to-one"]:
