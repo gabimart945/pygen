@@ -328,7 +328,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Generate `__init__.py` for models
         init_template = env.get_template('models_init_template.jinja2')
-        init_context = {"entities": self._psm_model.entities}
+        init_context = {"entities": self._psm_model.entities, "config": self._config}
         init_rendered = init_template.render(init_context)
         init_file_path = os.path.join(path, "__init__.py")
         with open(init_file_path, "w") as init_file:

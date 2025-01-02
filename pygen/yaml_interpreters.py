@@ -97,7 +97,7 @@ class ConfigurationYAMLInterpreter(IYamlInterpreter):
         """
         if 'project_name' not in content:
             raise ConfigurationException("The YAML file must contain 'project_name' at the root.")
-        if 'auth' in content and content['auth'] not in ["basic"]:
+        if 'auth' in content and content['auth'] not in ["jwt"]:
             raise ConfigurationException(f"Unsupported auth method {content['auth']}")
 
     @staticmethod

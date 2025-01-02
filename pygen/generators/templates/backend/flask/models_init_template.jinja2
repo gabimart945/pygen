@@ -6,3 +6,6 @@ db = SQLAlchemy()
 {% for entity in entities %}
 from app.models.{{ entity.name.lower() }} import {{ entity.name }}
 {% endfor %}
+{% if config.auth == "jwt" %}
+from app.models.user import User
+{% endif %}
