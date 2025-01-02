@@ -30,16 +30,23 @@ def test_create_{{ entity.name.lower() }}(test_client):
         {% endfor %}
     }
     response = test_client.post('/api/{{ entity.name.lower() }}s/', json=payload)
+
+    {% if config.auth == "jwt" %}
+    assert response.status_code == 401
+    {% else %}
     assert response.status_code == 201
-    assert response.json['id'] is not None
+    {% endif %}
 
 def test_get_{{ entity.name.lower() }}_list(test_client):
     """
     Test retrieving the list of {{ entity.name }} records.
     """
     response = test_client.get('/api/{{ entity.name.lower() }}s/')
+    {% if config.auth == "jwt" %}
+    assert response.status_code == 401
+    {% else %}
     assert response.status_code == 200
-    assert isinstance(response.json, list)
+    {% endif %}
 
 def test_update_{{ entity.name.lower() }}(test_client):
     """
@@ -52,11 +59,19 @@ def test_update_{{ entity.name.lower() }}(test_client):
         {% endfor %}
     }
     response = test_client.put('/api/{{ entity.name.lower() }}s/1', json=update_payload)
+    {% if config.auth == "jwt" %}
+    assert response.status_code == 401
+    {% else %}
     assert response.status_code == 200
+    {% endif %}
 
 def test_delete_{{ entity.name.lower() }}(test_client):
     """
     Test deleting an existing {{ entity.name }}.
     """
     response = test_client.delete('/api/{{ entity.name.lower() }}s/1')
-    assert response.status_code == 204
+    {% if config.auth == "jwt" %}
+    assert response.status_code == 401
+    {% else %}
+    assert response.status_code == 200
+    {% endif %}

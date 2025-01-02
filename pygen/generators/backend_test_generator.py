@@ -38,7 +38,7 @@ class FlaskTestGenerator:
             entity (Entity): The entity to generate tests for.
         """
         template = self._env.get_template("controller_test_template.jinja2")
-        rendered = template.render(entity=entity)
+        rendered = template.render(entity=entity, config=self._config)
         file_path = os.path.join(self._tests_path, f"test_{entity.name.lower()}_controller.py")
         with open(file_path, "w") as file:
             file.write(rendered)
@@ -122,7 +122,7 @@ class SecurityTestGenerator:
             entity (Entity): The entity to generate tests for.
         """
         template = self._env.get_template("security_test_template.jinja2")
-        rendered = template.render(entity=entity)
+        rendered = template.render(entity=entity, config=self._config)
         file_path = os.path.join(self._tests_path, f"test_{entity.name.lower()}_security.py")
         with open(file_path, "w") as file:
             file.write(rendered)
@@ -173,7 +173,7 @@ class IntegrationTestGenerator:
             entity (Entity): The entity to generate tests for.
         """
         template = self._env.get_template("integration_test_template.jinja2")
-        rendered = template.render(entity=entity)
+        rendered = template.render(entity=entity, config=self._config)
         file_path = os.path.join(self._tests_path, f"test_{entity.name.lower()}_integration.py")
         with open(file_path, "w") as file:
             file.write(rendered)

@@ -28,7 +28,11 @@ class Test{{ entity.name }}Controller(unittest.TestCase):
         that the response status code is 200, indicating successful retrieval.
         """
         response = self.client.get('/api/{{ entity.name.lower() }}s/')  # Perform a GET request
+        {% if config.auth == "jwt" %}
+        self.assertEqual(401, response.status_code)  # Assert the response code is 200
+        {% else %}
         self.assertEqual(200, response.status_code)  # Assert the response code is 200
+        {% endif %}
         # Add more assertions as needed to validate the response content
 
     def test_create_{{ entity.name.lower() }}(self):
@@ -45,5 +49,9 @@ class Test{{ entity.name }}Controller(unittest.TestCase):
         }
 
         response = self.client.post('/api/{{ entity.name.lower() }}s/', json=payload)  # Perform a POST request
-        self.assertEqual(201, response.status_code)  # Assert the response code is 201
+        {% if config.auth == "jwt" %}
+        self.assertEqual(401, response.status_code)  # Assert the response code is 200
+        {% else %}
+        self.assertEqual(201, response.status_code)  # Assert the response code is 200
+        {% endif %}
         # Add more assertions as needed to validate the response content

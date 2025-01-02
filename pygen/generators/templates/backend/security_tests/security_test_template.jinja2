@@ -71,7 +71,11 @@ def test_sql_injection_protection(api_client):
     {% if field.type == "db.String(255)" %}
     payload = {"{{ field.name }}": "' OR '1'='1"}
     response = api_client.post(BASE_URL, json=payload)
+    {% if config.auth == "jwt" %}
+    assert response.status_code in [401], "SQL Injection not properly handled for field '{{ field.name }}'."
+    {% else %}
     assert response.status_code in [400], "SQL Injection not properly handled for field '{{ field.name }}'."
+    {% endif %}
     {% endif %}
     {% endfor %}
 
