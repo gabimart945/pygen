@@ -1,13 +1,29 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import axios from 'axios';
+import api from "../api";
 import {{ component.name }}Form from '../components/{{ component.name }}Form';
 
-jest.mock('axios'); // Mock axios to avoid real HTTP requests
+// Mockear Axios
+jest.mock('axios', () => ({
+    create: jest.fn(() => ({
+        interceptors: {
+            request: {
+                use: jest.fn(), // Simula el método 'use' del interceptor
+            },
+        },
+        get: jest.fn(),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+    })),
+}));
+
+
+jest.mock('../api'); // Mock axios to avoid real HTTP requests
 
 describe('{{ component.name }}Form Component Tests', () => {
     it('renders loading state when fetching data', async () => {
-        axios.get.mockResolvedValueOnce({ data: { name: 'John Doe' } });
+        api.get.mockResolvedValueOnce({ data: { name: 'John Doe' } });
 
         render(<{{ component.name }}Form id={1} />);
         expect(screen.getByText(/Loading/i)).toBeInTheDocument();
@@ -18,7 +34,7 @@ describe('{{ component.name }}Form Component Tests', () => {
     });
 
     it('renders error state on API failure', async () => {
-        axios.get.mockRejectedValueOnce(new Error('Error fetching data'));
+        api.get.mockRejectedValueOnce(new Error('Error fetching data'));
 
         render(<{{ component.name }}Form id={1} />);
         await waitFor(() => {
@@ -53,7 +69,7 @@ describe('{{ component.name }}Form Component Tests', () => {
 
 
     it('submits the form with correct data', async () => {
-        axios.post.mockResolvedValueOnce({ data: { id: 1 } });
+        api.post.mockResolvedValueOnce({ data: { id: 1 } });
         const mockOnSuccess = jest.fn();
 
         render(<{{ component.name }}Form onSuccess={mockOnSuccess} />);
@@ -85,8 +101,8 @@ describe('{{ component.name }}Form Component Tests', () => {
                 {% endfor %}
             },
         ];
-        axios.get.mockResolvedValueOnce({ data: mockData });
-        axios.put.mockResolvedValueOnce({ data: { id: 1 } });
+        api.get.mockResolvedValueOnce({ data: mockData });
+        api.put.mockResolvedValueOnce({ data: { id: 1 } });
         const mockOnSuccess = jest.fn();
 
         render(<{{ component.name }}Form id={1} onSuccess={mockOnSuccess} />);

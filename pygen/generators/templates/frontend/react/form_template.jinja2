@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from "../api";
 
 const {{ component.name }}Form = ({
     id,
@@ -15,17 +15,16 @@ const {{ component.name }}Form = ({
 
     useEffect(() => {
         if (!passedData && id) {
-            axios
-                .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`)
-                .then((response) => {
-                    setFormData(response.data);
-                    setLoading(false);
-                })
-                .catch((error) => {
-                    console.error('Error fetching form data:', error);
-                    setError(error);
-                    setLoading(false);
-                });
+            api.get(`/{{ component.name | lower }}s/${id}`)
+               .then((response) => {
+                   setFormData(response.data);
+                   setLoading(false);
+               })
+               .catch((error) => {
+                   console.error('Error fetching form data:', error);
+                   setError(error);
+                   setLoading(false);
+               });
         }
     }, [id, passedData]);
 
@@ -37,7 +36,7 @@ const {{ component.name }}Form = ({
             for (const rel of {{ component.relationships | tojson }}) {
                 if (rel.type === 'ParentReferenceComponent') {
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/api/${rel.target.toLowerCase()}s/`);
+                        const response = await api.get(`/${rel.target.toLowerCase()}s/`);
                         options[rel.target] = response.data;
                     } catch (error) {
                         console.error(`Error fetching options for ${rel.target}:`, error);
@@ -64,14 +63,14 @@ const {{ component.name }}Form = ({
 
         const method = id ? 'put' : 'post';
 
-        let url = `${API_BASE_URL}/api/{{ component.name | lower }}s/`;
+        let url = `/{{ component.name | lower }}s/`;
         const payload = { ...formData };
 
         if (id) {
-            url = `${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`;
+            url = `/{{ component.name | lower }}s/${id}`;
         }
 
-        axios[method](url, payload)
+        api[method](url, payload)
             .then((response) => {
                 console.log('Data saved successfully:', response.data);
                 if (onSuccess) {

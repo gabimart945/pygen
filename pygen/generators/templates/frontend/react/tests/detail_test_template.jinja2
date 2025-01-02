@@ -2,6 +2,22 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import {{ component.name }}Detail from '../components/{{ component.name }}Detail';
 
+// Mockear Axios
+jest.mock('axios', () => ({
+    create: jest.fn(() => ({
+        interceptors: {
+            request: {
+                use: jest.fn(), // Simula el método 'use' del interceptor
+            },
+        },
+        get: jest.fn(),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+    })),
+}));
+
+
 describe('{{ component.name }}Detail Component Tests', () => {
     it('renders without crashing', () => {
         render(<{{ component.name }}Detail />);

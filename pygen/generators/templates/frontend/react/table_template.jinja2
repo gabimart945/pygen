@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from "../api";
 
 const {{ component.name }}Table = ({ onEdit, onDelete, onSelect, id, data: passedData }) => {
     const [data, setData] = useState(passedData ? passedData : []);
@@ -12,7 +12,7 @@ const {{ component.name }}Table = ({ onEdit, onDelete, onSelect, id, data: passe
     useEffect(() => {
         // Solo hacemos la llamada si no tenemos "passedData"
         if (!passedData) {
-            axios.get(`${API_BASE_URL}/api/{{ component.name | lower }}s`)
+            api.get(`/{{ component.name | lower }}s`)
                 .then(response => {
                     setData(response.data);
                     setLoading(false);

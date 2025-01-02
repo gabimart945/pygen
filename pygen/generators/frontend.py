@@ -175,6 +175,11 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         # Initialize Jinja2 environment
         env = Environment(loader=FileSystemLoader(self._templates_path))
 
+        if self._config.auth == "jwt":
+            protected_route_template = env.get_template("protected_route_template.jinja2")
+            with open(os.path.join(self._path, "src", "components", "ProtectedRoute.jsx"), "w") as file:
+                file.write(protected_route_template.render())
+
         # Generate components for each entity
         for component in self._psm_model.components:
             for view in ["Table", "Form"]:
@@ -221,11 +226,18 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         print(f".env file created at {env_file_path}")
 
+        # Generate api.js
+        api_template = env.get_template("api_template.jinja2")
+        with open(os.path.join(self._path, "src", "api.js"), "w") as file:
+            file.write(api_template.render(config=self._config))
+        print(f"Api.js file created at {os.path.join(self._path, "src", "Api.js")}")
+
         # Generate App.js file
         template = env.get_template("app_template.jinja2")
-        output = template.render(components=self._psm_model.components)
+        output = template.render(components=self._psm_model.components, config=self._config)
         with open(os.path.join(self._path, "src", "App.js"), "w") as file:
             file.write(output)
+        print(f"App.js file created at {os.path.join(self._path, "src", "App.js")}")
 
         # Generate index.css file
         css_template = env.get_template("app_css_template.jinja2")
@@ -251,35 +263,52 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Create package.json
         package_json_content = {
-          "name": "react-frontend",
-          "version": "0.1.0",
-          "private": True,
-          "dependencies": {
-            "react": "^18.2.0",
-            "react-dom": "^18.2.0",
-            "react-scripts": "5.0.1",
-            "axios": "^1.5.0",
-            "react-router-dom": "^6.14.0",
-            "react-bootstrap": "^2.8.0",
-            "bootstrap": "^5.3.1"
-          },
-          "devDependencies": {
-            "@testing-library/react": "^14.1.0",
-            "@testing-library/jest-dom": "^6.0.0",
-            "@testing-library/user-event": "^14.5.0",
-            "jest": "^29.7.0",
-            "jest-environment-jsdom": "^29.7.0",
-            "eslint": "^8.57.1",
-            "rimraf": "^4.0.0"
-          },
-          "scripts": {
-            "start": "react-scripts start",
-            "build": "react-scripts build",
-            "test": "react-scripts test",
-            "test:coverage": "react-scripts test -- --coverage",
-            "eject": "react-scripts eject"
-          }
-        }
+              "name": "react-frontend",
+              "version": "0.1.0",
+              "private": True,
+              "type": "module",
+              "dependencies": {
+                "axios": "^1.5.0",
+                "bootstrap": "^5.3.1",
+                "react": "^18.2.0",
+                "react-bootstrap": "^2.8.0",
+                "react-dom": "^18.2.0",
+                "react-router-dom": "^6.14.0",
+                "react-scripts": "5.0.1"
+              },
+              "devDependencies": {
+                "@babel/core": "^7.26.0",
+                "@babel/preset-env": "^7.26.0",
+                "@babel/preset-react": "^7.26.3",
+                "@testing-library/jest-dom": "^6.0.0",
+                "@testing-library/react": "^14.1.0",
+                "@testing-library/user-event": "^14.5.0",
+                "babel-jest": "^29.7.0",
+                "eslint": "^8.57.1",
+                "jest": "^29.7.0",
+                "jest-environment-jsdom": "^29.7.0",
+                "rimraf": "^4.0.0"
+              },
+              "scripts": {
+                "start": "react-scripts start",
+                "build": "react-scripts build",
+                "test": "react-scripts test",
+                "test:coverage": "react-scripts test -- --coverage",
+                "eject": "react-scripts eject"
+              },
+              "browserslist": {
+                "production": [
+                  ">0.2%",
+                  "not dead",
+                  "not op_mini all"
+                ],
+                "development": [
+                  "last 1 chrome version",
+                  "last 1 firefox version",
+                  "last 1 safari version"
+                ]
+              }
+            }
 
 
         with open(os.path.join(self._path, "package.json"), "w") as file:
@@ -360,6 +389,12 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Initialize Jinja2 environment
         env = Environment(loader=FileSystemLoader(self._templates_path))
+
+        # Generate login view if JWT authentication is enabled
+        if self._config.auth == "jwt":
+            login_template = env.get_template("login_template.jinja2")
+            with open(os.path.join(self._path, "src", "views", "LoginView.jsx"), "w") as file:
+                file.write(login_template.render(config=self._config))
 
         # Generate views for each entity
         for component in self._psm_model.components:

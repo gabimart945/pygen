@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import Api from "../Api";
 
 const {{ component.name }}Detail = ({ id, data: passedData }) => {
     // Si la data se pasa por prop, la usamos directamente;
@@ -13,7 +13,7 @@ const {{ component.name }}Detail = ({ id, data: passedData }) => {
     useEffect(() => {
         // Solo si no hay data pasada y tenemos un ID, hacemos fetch
         if (!passedData && id) {
-            axios.get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${id}`)
+            api.get(`/{{ component.name | lower }}s/${id}`)
                 .then(response => {
                     setData(response.data);
                     setLoading(false);

@@ -1,5 +1,10 @@
-import React from 'react';
+import {React, useState} from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
+{% if config.auth == "jwt" %}
+import LoginView from './views/LoginView';
+import ProtectedRoute from './components/ProtectedRoute';
+{% endif %}
 
 {% for component in components %}
 import {{ component.name }}Table from './components/{{ component.name }}Table';
@@ -8,6 +13,17 @@ import {{ component.name }}View from './views/{{ component.name }}View';
 {% endfor %}
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("token"))); // Check if token exists
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove token
+    window.location.href = "/login"; // Redirect to login page
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
   return (
     <Router>
       <div className="App">
@@ -33,20 +49,75 @@ function App() {
                   <Link className="nav-link" to="/{{ component.name | lower }}/view">{{ component.name }}</Link>
                 </li>
                 {% endfor %}
+
+              </ul>
+              <ul className="navbar-nav ms-auto">
+                {% if config.auth == "jwt" %}
+                {isLoggedIn ? (
+                  <li className="nav-item">
+                    <button className="btn btn-outline-danger right" onClick={handleLogout}>
+                      Logout
+                    </button>
+                  </li>
+                ) : (
+                  <li className="nav-item">
+                    <Link className="nav-link right" to="/login">Login</Link>
+                  </li>
+                )}
+                {% endif %}
               </ul>
             </div>
           </div>
         </nav>
         <Routes>
-          {% for component in components %}
-          {/* Main Views */}
-          <Route path="/{{ component.name | lower }}/view" element={<{{ component.name }}View />} />
+          {% if config.auth == "jwt" %}
+          {/* Login Route */}
+          <Route path="/login" element={<LoginView onLogin={handleLogin} />} />
 
-          {/* List, Form, and Detail Routes */}
+          {/* Protected Routes */}
+          {% for component in components %}
+          <Route
+            path="/{{ component.name | lower }}/view"
+            element={
+              <ProtectedRoute>
+                <{{ component.name }}View />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/{{ component.name | lower }}/table"
+            element={
+              <ProtectedRoute>
+                <{{ component.name }}Table />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/{{ component.name | lower }}/form"
+            element={
+              <ProtectedRoute>
+                <{{ component.name }}Form id={null} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/{{ component.name | lower }}/form/:id"
+            element={
+              <ProtectedRoute>
+                <{{ component.name }}Form />
+              </ProtectedRoute>
+            }
+          />
+          {% endfor %}
+          {% else %}
+          {/* Public Routes */}
+          {% for component in components %}
+          <Route path="/{{ component.name | lower }}/view" element={<{{ component.name }}View />} />
           <Route path="/{{ component.name | lower }}/table" element={<{{ component.name }}Table />} />
           <Route path="/{{ component.name | lower }}/form" element={<{{ component.name }}Form id={null} />} />
           <Route path="/{{ component.name | lower }}/form/:id" element={<{{ component.name }}Form />} />
           {% endfor %}
+          {% endif %}
         </Routes>
       </div>
     </Router>

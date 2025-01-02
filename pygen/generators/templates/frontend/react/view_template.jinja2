@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Tabs, Tab } from 'react-bootstrap';
-import axios from 'axios';
+import api from "../api";
 
 // Import principal entity's Table and Form
 import {{ component.name }}Table from '../components/{{ component.name }}Table';
@@ -13,7 +13,6 @@ import {{ relationship.target }}Form from '../components/{{ relationship.target 
 {% endfor %}
 
 const {{ component.name }}View = () => {
-    const API_BASE_URL = `${process.env.REACT_APP_API_HOST}:${process.env.REACT_APP_API_PORT}`;
 
     // Main data state
     const [mainData, setMainData] = useState([]);
@@ -55,10 +54,9 @@ const {{ component.name }}View = () => {
     }, []);
 
     const fetchMainData = () => {
-        axios
-            .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/`)
-            .then((response) => setMainData(response.data))
-            .catch((err) => console.error('Error fetching main data:', err));
+        api.get(`/{{ component.name | lower }}s/`)
+           .then((response) => setMainData(response.data))
+           .catch((err) => console.error('Error fetching main data:', err));
     };
 
     // =====================
@@ -81,17 +79,16 @@ const {{ component.name }}View = () => {
 
         // Fetch related data for the selected item
         {% for relationship in component.relationships %}
-        axios
-            .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${item.id}/{{ relationship.target | lower }}s`)
-            .then((response) => {
-                setRelatedData((prev) => ({
-                    ...prev,
-                    '{{ relationship.target | lower }}': response.data,
-                }));
-            })
-            .catch((err) =>
-                console.error('Error fetching related data for {{ relationship.target }}:', err)
-            );
+        api.get(`/{{ component.name | lower }}s/${item.id}/{{ relationship.target | lower }}s`)
+           .then((response) => {
+               setRelatedData((prev) => ({
+                   ...prev,
+                   '{{ relationship.target | lower }}': response.data,
+               }));
+           })
+           .catch((err) =>
+               console.error('Error fetching related data for {{ relationship.target }}:', err)
+           );
         {% endfor %}
     };
 
@@ -104,14 +101,13 @@ const {{ component.name }}View = () => {
     };
 
     const confirmDelete = () => {
-        axios
-            .delete(`${API_BASE_URL}/api/{{ component.name | lower }}s/${deleteItemId}`)
-            .then(() => {
-                console.log('Item deleted');
-                setShowDeleteConfirm(false);
-                fetchMainData(); // refresh main list
-            })
-            .catch((err) => console.error('Error deleting item:', err));
+        api.delete(`$/{{ component.name | lower }}s/${deleteItemId}`)
+           .then(() => {
+               console.log('Item deleted');
+               setShowDeleteConfirm(false);
+               fetchMainData(); // refresh main list
+           })
+           .catch((err) => console.error('Error deleting item:', err));
     };
 
     // =====================
@@ -121,17 +117,16 @@ const {{ component.name }}View = () => {
         setCurrentItem(item);
 
         {% for relationship in component.relationships %}
-        axios
-            .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${item.id}/{{ relationship.target | lower }}s`)
-            .then((response) => {
-                setRelatedData((prev) => ({
-                    ...prev,
-                    '{{ relationship.target | lower }}': response.data,
-                }));
-            })
-            .catch((err) =>
-                console.error('Error fetching related data for {{ relationship.target }}:', err)
-            );
+        api.get(`/{{ component.name | lower }}s/${item.id}/{{ relationship.target | lower }}s`)
+           .then((response) => {
+               setRelatedData((prev) => ({
+                   ...prev,
+                   '{{ relationship.target | lower }}': response.data,
+               }));
+           })
+           .catch((err) =>
+               console.error('Error fetching related data for {{ relationship.target }}:', err)
+           );
         {% endfor %}
     };
 
@@ -144,12 +139,11 @@ const {{ component.name }}View = () => {
         setShowRelatedForm(true);
     };
 
-    // =====================
+  // =====================
   //   EDIT RELATED
   // =====================
   const handleEditRelated = (entity, item) => {
-    // Abrir modal de la entidad relacionada en modo edición
-    setCurrentRelatedItem(item);   // => Form recibirá id={item.id}
+    setCurrentRelatedItem(item);
     setRelatedEntity(entity);
     setShowRelatedForm(true);
   };
@@ -158,22 +152,19 @@ const {{ component.name }}View = () => {
   //   DELETE RELATED
   // =====================
   const handleDeleteRelated = (entity, itemId) => {
-    // Ejemplo: DELETE /api/pets/:id (si entity = "Pet")
-    axios
-      .delete(`${API_BASE_URL}/api/${entity.toLowerCase()}s/${itemId}`)
+    api
+      .delete(`/${entity.toLowerCase()}s/${itemId}`)
       .then(() => {
         console.log(`Deleted ${entity} id=${itemId}`);
-        // Refrescar los datos relacionados si tenemos un item padre seleccionado
         if (currentItem) {
-          axios
-            .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${currentItem.id}/${entity.toLowerCase()}s`)
-            .then((resp) => {
-              setRelatedData((prev) => ({
-                ...prev,
-                [entity.toLowerCase()]: resp.data,
-              }));
-            })
-            .catch((err) => console.error(`Error fetching ${entity} after delete:`, err));
+          api.get(`/{{ component.name | lower }}s/${currentItem.id}/${entity.toLowerCase()}s`)
+             .then((resp) => {
+                setRelatedData((prev) => ({
+                    ...prev,
+                    [entity.toLowerCase()]: resp.data,
+                }));
+             })
+             .catch((err) => console.error(`Error fetching ${entity} after delete:`, err));
         }
       })
       .catch((err) =>
@@ -201,17 +192,16 @@ const {{ component.name }}View = () => {
         // Optionally, refresh the related data for the current item
         if (currentItem) {
             {% for relationship in component.relationships %}
-            axios
-                .get(`${API_BASE_URL}/api/{{ component.name | lower }}s/${currentItem.id}/{{ relationship.target | lower }}s`)
-                .then((response) => {
-                    setRelatedData((prev) => ({
-                        ...prev,
-                        '{{ relationship.target | lower }}': response.data,
-                    }));
-                })
-                .catch((err) =>
-                    console.error('Error fetching related data for {{ relationship.target }}:', err)
-                );
+            api.get(`/{{ component.name | lower }}s/${currentItem.id}/{{ relationship.target | lower }}s`)
+               .then((response) => {
+                   setRelatedData((prev) => ({
+                       ...prev,
+                       '{{ relationship.target | lower }}': response.data,
+                   }));
+               })
+               .catch((err) =>
+                   console.error('Error fetching related data for {{ relationship.target }}:', err)
+               );
             {% endfor %}
         }
     };
