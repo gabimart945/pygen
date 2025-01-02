@@ -118,7 +118,10 @@ const {{ component.name }}Form = ({
                             <option value="">Select a {rel.target}</option>
                             {(dropdownOptions[rel.target] || []).map((option) => (
                                 <option key={option.id} value={option.id}>
-                                    {Object.values(option).join(' - ') || option.id}
+                                    {{ "{[" }}option.id{{ ", ...Object.entries(option)" }}
+                                        {{ ".filter(([key, value]) => typeof value === 'string')" }}
+                                        {{ ".map(([key, value]) => value)" }}
+                                    {{ "].join(' - ')" }} || option.id}
                                 </option>
                             ))}
                         </select>

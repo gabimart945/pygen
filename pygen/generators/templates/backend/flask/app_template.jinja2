@@ -5,7 +5,9 @@ from flask_migrate import Migrate
 {% for entity in entities %}
 from app.controllers.{{ entity.name.lower() }}_controller import {{ entity.name.lower() }}_bp
 {% endfor %}
-
+{% if config.auth == "jwt" %}
+from app.controllers.auth_controller import auth_bp
+{% endif %}
 
 
 def create_app(config_name='default'):
@@ -55,6 +57,9 @@ def create_app(config_name='default'):
     {% for entity in entities %}
     app.register_blueprint({{ entity.name.lower() }}_bp, url_prefix='/api/{{ entity.name.lower() }}s')
     {% endfor %}
+    {% if config.auth == "jwt" %}
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    {% endif %}
 
     with app.app_context():
         db.create_all()

@@ -1,0 +1,19 @@
+from marshmallow import Schema, fields, validate, validates_schema, ValidationError
+
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(required=True, validate=validate.Length(min=3))
+    email = fields.Email(required=True)
+    password = fields.Str(load_only=True, required=True, validate=validate.Length(min=6))
+
+
+    @validates_schema(pass_many=True)
+    def validate_sql_injection(self, data, many, **kwargs):
+        """Validates input fields against SQL injection patterns."""
+        sql_injection_pattern = r".*([';/*]).*"
+        safe_pattern = r"^[a-zA-Z0-9 _-]+$"
+
+        for field_name, value in (data.items() if isinstance(data, dict) else []):
+            if isinstance(value, str):
+                if re.match(sql_injection_pattern, value) and not re.match(safe_pattern, value):
+                    raise ValidationError(f"Potential SQL injection detected in field '{field_name}'.")

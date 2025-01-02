@@ -1,17 +1,22 @@
 from flask import Blueprint, request, jsonify
 from app.services.{{ entity.name.lower() }}_service import {{ entity.name }}Service
+{% if config.auth == "jwt" %}
+from flask_jwt_extended import jwt_required
+{% endif %}
 
 {{ entity.name.lower() }}_bp = Blueprint('{{ entity.name.lower() }}_bp', __name__)
 service = {{ entity.name }}Service()
 
 # GET all records
 @{{ entity.name.lower() }}_bp.route('/', methods=['GET'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def get_all_{{ entity.name.lower() }}s():
     items = service.get_all()  # Este método devuelve sólo la lista (sin errores)
     return jsonify(items), 200
 
 # GET a single record by ID
 @{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['GET'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def get_{{ entity.name.lower() }}(id):
     item = service.get_by_id(id)  # Este método también devuelve sólo el objeto o None
     if not item:
@@ -20,6 +25,7 @@ def get_{{ entity.name.lower() }}(id):
 
 # POST to create a new record
 @{{ entity.name.lower() }}_bp.route('/', methods=['POST'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def create_{{ entity.name.lower() }}():
     data = request.get_json()
     item, errors = service.create(data)
@@ -31,6 +37,7 @@ def create_{{ entity.name.lower() }}():
 
 # PUT to update an existing record
 @{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['PUT'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def update_{{ entity.name.lower() }}(id):
     data = request.get_json()
     item, errors = service.update(id, data)
@@ -47,6 +54,7 @@ def update_{{ entity.name.lower() }}(id):
 
 # DELETE to remove a record
 @{{ entity.name.lower() }}_bp.route('/<int:id>', methods=['DELETE'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def delete_{{ entity.name.lower() }}(id):
     success = service.delete(id)  # Devuelve True o False
     if not success:
@@ -76,6 +84,7 @@ def get_{{ relationship.name.lower() }}s(id):
 
 # POST to add a related {{ relationship.target.lower() }}
 @{{ entity.name.lower() }}_bp.route('/<int:id>/{{ relationship.name.lower() }}{{ "" if relationship.name.lower().endswith("s") else "s" }}', methods=['POST'])
+{% if config.auth == "jwt" %}@jwt_required(){% endif %}
 def add_{{ relationship.name.lower() }}(id):
     data = request.get_json()
     item, errors = service.add_{{ relationship.name }}(id, data)

@@ -24,6 +24,10 @@ class IBackendApiGenerator(ABC):
         self._generate_schemas(root_path + '/app/schemas')
         self._generate_tests(root_path + '/tests')
 
+        # Si la autenticación es JWT, generamos los archivos adicionales
+        if self._config.auth == "jwt":
+            self._generate_authentication_files(root_path)
+
     @abstractmethod
     def _generate_project_files(self, root_path):
         raise NotImplementedError
@@ -54,6 +58,10 @@ class IBackendApiGenerator(ABC):
 
     @abstractmethod
     def _generate_tests(self, path):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _generate_authentication_files(self, path):
         raise NotImplementedError
 
 
@@ -97,7 +105,9 @@ class FlaskApiGenerator(IBackendApiGenerator):
             "flask-cors",
             "pytest",
             "requests",
-            "pynt"
+            "pynt",
+            "Flask-JWT-Extended",
+            "cryptography",
         ]
 
         requirements_path = os.path.join(root_path, "requirements.txt")
@@ -108,7 +118,10 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Generate `config.py`
         config_template = env.get_template('config_template.jinja2')
-        config_content = config_template.render()
+        context = {
+            "config": self._config
+        }
+        config_content = config_template.render(context)
         config_path = os.path.join(root_path, "config.py")
 
         with open(config_path, "w") as config_file:
@@ -132,7 +145,8 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Context for rendering the template
         context = {
-            "entities": entities
+            "entities": entities,
+            "config": self._config,
         }
 
         # Render the template
@@ -166,7 +180,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
             template = env.get_template('controller_template.jinja2')
             context = {
                 "entity": entity,
-                "config": self._config.backend
+                "config": self._config
             }
             rendered_code = template.render(context)
 
@@ -384,3 +398,38 @@ class FlaskApiGenerator(IBackendApiGenerator):
         integration_test_generator.generate()
         security_test_generator = SecurityTestGenerator(self._config, self._psm_model, path + '/security')
         security_test_generator.generate()
+
+    def _generate_authentication_files(self, root_path):
+        """
+        Generates necessary files for JWT authentication.
+        """
+        auth_templates_path = os.path.join(self._templates_path, "jwt_auth")
+        env = Environment(loader=FileSystemLoader(auth_templates_path))
+
+        # Create directories if they don't exist
+        os.makedirs(os.path.join(root_path, "app/controllers"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/services"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/schemas"), exist_ok=True)
+        os.makedirs(os.path.join(root_path, "app/models"), exist_ok=True)
+
+        # Generate user model
+        user_model_template = env.get_template("user_model_template.jinja2")
+        with open(os.path.join(root_path, "app/models/user.py"), "w") as file:
+            file.write(user_model_template.render())
+
+        # Generate user schema
+        user_schema_template = env.get_template("user_schema_template.jinja2")
+        with open(os.path.join(root_path, "app/schemas/user_schema.py"), "w") as file:
+            file.write(user_schema_template.render())
+
+        # Generate auth service
+        auth_service_template = env.get_template("auth_service_template.jinja2")
+        with open(os.path.join(root_path, "app/services/auth_service.py"), "w") as file:
+            file.write(auth_service_template.render())
+
+        # Generate auth controller
+        auth_controller_template = env.get_template("auth_controller_template.jinja2")
+        with open(os.path.join(root_path, "app/controllers/auth_controller.py"), "w") as file:
+            file.write(auth_controller_template.render())
+
+        print("Authentication files generated successfully.")
