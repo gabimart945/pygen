@@ -227,6 +227,10 @@ class FlaskApiGenerator(IBackendApiGenerator):
     def _generate_app(self, path, port):
         """
         Generates the `__init__.py` file for the Flask application.
+
+        Args:
+            path (str): Path to the `app` directory.
+            port (int): Port number for the Flask application.
         """
         # Set up Jinja2 environment
         env = Environment(loader=FileSystemLoader(self._templates_path))
@@ -484,6 +488,12 @@ class FlaskApiGenerator(IBackendApiGenerator):
         return type_mapping.get(pim_type, "db.String(255)")
 
     def _generate_tests(self, path):
+        """
+        Generates unit, integration, and security tests for the API.
+
+        Args:
+            path (str): Path to the `tests` directory.
+        """
         unit_test_generator = FlaskTestGenerator(self._config, self._psm_model, path + '/unit')
         unit_test_generator.generate()
         integration_test_generator = IntegrationTestGenerator(self._config, self._psm_model, path + '/integration')
@@ -493,7 +503,10 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
     def _generate_authentication_files(self, root_path):
         """
-        Generates necessary files for JWT authentication.
+        Creates files for JWT-based authentication, including models, schemas, services, and controllers.
+
+        Args:
+            root_path (str): Path to the root project directory.
         """
         auth_templates_path = os.path.join(self._templates_path, "jwt_auth")
         env = Environment(loader=FileSystemLoader(auth_templates_path))

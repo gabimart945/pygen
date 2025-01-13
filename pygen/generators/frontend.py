@@ -11,14 +11,22 @@ from pygen.models.react_psm import PSMModel
 
 class FrontendGenerator(ABC):
     """
-    Abstract base class for generating frontend applications from a CIM model.
+    Abstract base class for generating frontend applications from a Computation Independent Model (CIM).
+
+    Attributes:
+        _config (object): Configuration object containing generation settings.
+        _cim_model (CimModel): The CIM representing entities, attributes, and relationships.
+        _pim_model (PIMModel): The Platform Independent Model generated from the CIM.
+        _path (str): Path to the directory where the frontend will be generated.
     """
     def __init__(self, config, cim_model, path):
         """
         Initializes the frontend generator with a CIM model.
 
         Args:
+            config (object): Configuration object for the frontend generator.
             cim_model (CimModel): The conceptual independent model.
+            path (str): Path to the output directory for the generated frontend.
         """
         self._config = config
         self._cim_model = cim_model
@@ -28,7 +36,10 @@ class FrontendGenerator(ABC):
 
     def _transform_cim_to_pim(self):
         """
-        Transforms the CIM model into a PIM model structured for frontend generation.
+        Transforms the CIM model into a PIM model for frontend generation.
+
+        Converts entity attributes and relationships into forms, views, and components
+        suitable for frontend development.
         """
         self._pim_model = PIMModel()
 
@@ -70,15 +81,17 @@ class FrontendGenerator(ABC):
     def _transform_pim_to_psm(self):
         """
         Abstract method to transform the PIM model into a PSM model specific to a frontend framework.
+
+        Must be implemented by subclasses to support framework-specific requirements.
         """
         raise NotImplementedError
 
     @abstractmethod
     def generate(self):
         """
-        Abstract method to generate the frontend application using Jinja2 templates.
+        Abstract method to generate the frontend application.
 
-
+        Must be implemented by subclasses to produce the final application using templates.
         """
         raise NotImplementedError
 
@@ -86,13 +99,20 @@ class FrontendGenerator(ABC):
 class ReactFrontendGenerator(FrontendGenerator, ABC):
     """
     Concrete implementation of FrontendGenerator for generating React applications.
+
+    Attributes:
+        _psm_model (PSMModel): The Platform Specific Model tailored for React components.
+        _templates_path (str): Path to the directory containing React-specific Jinja2 templates.
+        _test_generator (ReactTestGenerator): Generator for creating React component tests.
     """
     def __init__(self, config, cim_model, path):
         """
         Initializes the React frontend generator.
 
         Args:
+            config (object): Configuration object for the React generator.
             cim_model (CimModel): The conceptual independent model.
+            path (str): Path to the output directory for the React frontend.
         """
         super().__init__( config, cim_model, path)
         self._psm_model = None  # Will store the React-specific components
@@ -102,7 +122,9 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
     def _transform_pim_to_psm(self):
         """
-        Transforms the PIM model into a PSM model specific to React.
+        Transforms the PIM model into a PSM model for React components.
+
+        Maps attributes and relationships to React-compatible inputs and components.
         """
         self._psm_model = PSMModel()
         for entity in self._pim_model.entities:
@@ -159,6 +181,11 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         return relationship_mapping.get(relationship_type, "DefaultRelationshipComponent")
 
     def generate(self):
+        """
+        Generates the React frontend application.
+
+        This includes generating the app structure, components, views, and test files.
+        """
         self._generate_app()
         self._generate_components()
         self._generate_views()
@@ -166,7 +193,9 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
     def _generate_components(self):
         """
-        Generates the React frontend application components using Jinja2 templates.
+        Generates React components using Jinja2 templates.
+
+        Creates component files for forms and tables based on the React PSM model.
         """
         # Ensure the src/components directory exists
         components_path = os.path.join(self._path, "src", "components")
@@ -203,7 +232,9 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
     def _generate_app(self):
         """
-        Generates the React App.js using Jinja2 templates and creates the frontend project structure manually if create-react-app is unavailable.
+        Generates the main React application files.
+
+        Includes the App.js, index.js, and related configuration files for the React application.
         """
         try:
             # Attempt to create the React app using react-scripts
@@ -249,7 +280,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
     def _create_project_structure(self):
         """
-        Creates the React project structure manually.
+        Manually creates the folder structure for the React project.
         """
         folders = [
             "src",
@@ -381,7 +412,9 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
     def _generate_views(self):
         """
-        Generates the React frontend views using Jinja2 templates.
+        Generates views for the React application using Jinja2 templates.
+
+        Each view corresponds to a component in the PSM model.
         """
         views_path = os.path.join(self._path, "src", "views")
         os.makedirs(views_path, exist_ok=True)

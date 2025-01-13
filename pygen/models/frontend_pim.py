@@ -1,6 +1,11 @@
 class PIMAttribute:
     """
-    Represents an attribute in the PIM model.
+    Represents an attribute in the Platform Independent Model (PIM).
+
+    Attributes:
+        name (str): The name of the attribute.
+        type (str): The type of the attribute (e.g., String, Integer, etc.).
+        nullable (bool): Indicates if the attribute can be null. Defaults to True.
     """
     def __init__(self, name: str, attr_type: str, nullable: bool = True):
         """
@@ -16,12 +21,17 @@ class PIMAttribute:
         self.nullable = nullable
 
     def __repr__(self):
+        """Returns a string representation of the PIM attribute."""
         return f"PIMAttribute(name={self.name!r}, type={self.type!r}, nullable={self.nullable})"
 
 
 class PIMRelationship:
     """
-    Represents a relationship between entities in the PIM model.
+    Represents a relationship between entities in the Platform Independent Model (PIM).
+
+    Attributes:
+        target (str): The name of the target entity.
+        type (str): The type of the relationship (e.g., one-to-one, one-to-many).
     """
     def __init__(self, target: str, rel_type: str):
         """
@@ -35,12 +45,18 @@ class PIMRelationship:
         self.type = rel_type
 
     def __repr__(self):
+        """Returns a string representation of the PIM relationship."""
         return f"PIMRelationship(target={self.target!r}, type={self.type!r})"
 
 
 class PIMEntity:
     """
-    Represents an entity in the PIM model.
+    Represents an entity in the Platform Independent Model (PIM).
+
+    Attributes:
+        name (str): The name of the entity.
+        attributes (list): A list of PIMAttribute objects associated with the entity.
+        relationships (list): A list of PIMRelationship objects defining relationships with other entities.
     """
     def __init__(self, name: str):
         """
@@ -75,12 +91,16 @@ class PIMEntity:
         self.relationships.append(PIMRelationship(target, rel_type))
 
     def __repr__(self):
+        """Returns a string representation of the PIM entity."""
         return f"PIMEntity(name={self.name!r}, attributes={self.attributes!r}, relationships={self.relationships!r})"
 
 
 class PIMModel:
     """
-    Represents the complete PIM model.
+    Represents the complete Platform Independent Model (PIM).
+
+    Attributes:
+        entities (list): A list of PIMEntity objects representing the entities in the model.
     """
     def __init__(self):
         """
@@ -103,4 +123,5 @@ class PIMModel:
         return entity
 
     def __repr__(self):
+        """Returns a string representation of the PIM model."""
         return f"PIMModel(entities={self.entities!r})"

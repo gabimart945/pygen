@@ -169,4 +169,5 @@ class PSMModel:
             yaml.dump(self.to_dict(), file, default_flow_style=False)
 
     def __repr__(self):
+        """Returns a string representation of the PIM model."""
         return f"PSMModel(components={self.components!r})"

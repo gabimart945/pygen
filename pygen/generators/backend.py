@@ -4,8 +4,27 @@ from pygen.models.backend_pim import PimModel, Entity
 
 
 class IBackendGenerator(ABC):
+    """
+    Abstract base class for backend code generators.
 
+    Provides the interface for generating folders, transforming models,
+    and creating APIs for the backend, with the flexibility to support different architectures.
+
+    Attributes:
+        _config (object): Configuration object containing backend framework and other settings.
+        _path (str): The root directory where the backend files will be generated.
+        _cim_model (object): The Computation Independent Model (CIM) representing the input model.
+        _api_generator (FlaskApiGenerator): The API generator for the backend (e.g., Flask).
+    """
     def __init__(self, config, model, path):
+        """
+        Initializes the backend generator with the given configuration, model, and output path.
+
+        Args:
+            config (object): Configuration object for backend generation.
+            model (object): The input Computation Independent Model (CIM).
+            path (str): The root directory where backend files will be generated.
+        """
         self._config = config
         self._path = path
         self._cim_model = model
@@ -13,35 +32,79 @@ class IBackendGenerator(ABC):
             self._api_generator = FlaskApiGenerator(self._config)
 
     def generate(self):
+        """
+        Orchestrates the backend generation process by transforming the model,
+        creating folder structures, and generating the API.
+        """
         self._transform_model()
         self._generate_folders()
         self._generate_api()
 
     @abstractmethod
     def _generate_folders(self):
+        """
+        Abstract method to create the folder structure for the backend.
+
+        Must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _transform_model(self):
+        """
+        Abstract method to transform the input CIM into a Platform Independent Model (PIM).
+
+        Must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     def _generate_api(self):
+        """
+        Generates the API for the backend using the transformed PIM.
+
+        Raises:
+            NotImplementedError: If not implemented by subclasses.
+        """
         raise NotImplementedError
 
 
 class MonolithicBackendGenerator(IBackendGenerator):
+    """
+    Backend generator for monolithic architectures.
 
+    Transforms the CIM into a single PIM and generates a monolithic backend.
+    """
     def __init__(self, config, model, path):
+        """
+        Initializes the monolithic backend generator.
+
+        Args:
+            config (object): Configuration object for backend generation.
+            model (object): The input CIM.
+            path (str): The root directory for backend generation.
+        """
         super().__init__(config, model, path)
         self._pim_model = None
 
     def _generate_folders(self):
+        """
+        Generates the folder structure for a monolithic backend.
+
+        Note:
+            This implementation is a placeholder and can be extended as needed.
+        """
         pass
 
     def _transform_model(self):
+        """
+        Transforms the CIM into a single PIM for the monolithic backend.
+        """
         self._cim_to_pim()
 
     def _generate_api(self):
+        """
+        Generates the API for the monolithic backend using the transformed PIM model.
+        """
         self._api_generator.generate(self._pim_model, self._path)
 
     def _cim_to_pim(self):
@@ -131,22 +194,43 @@ class MonolithicBackendGenerator(IBackendGenerator):
 
 
 class MicroservicesBackendGenerator(IBackendGenerator):
+    """
+    Backend generator for microservices architectures.
 
+    Creates a separate PIM for each entity in the CIM and generates individual services.
+    """
     def __init__(self, config, model, path):
+        """
+        Initializes the microservices backend generator.
+
+        Args:
+            config (object): Configuration object for backend generation.
+            model (object): The input CIM.
+            path (str): The root directory for backend generation.
+        """
         super().__init__(config, model, path)
         self._microservice_pim_models = []
         self._microservice_paths = {}
 
     def _generate_folders(self):
+        """
+        Creates a folder for each microservice based on its entity name.
+        """
         for model in self._config.models:
             print(f"Generate folder for {model.entity.name}")
             self._microservice_paths[model.entity.name] = self._path + "/" + model.entity.name
         pass
 
     def _transform_model(self):
+        """
+        Transforms the CIM into individual PIMs, one for each microservice.
+        """
         self._cim_to_pims()
 
     def _generate_api(self):
+        """
+        Generates the API for each microservice using its corresponding PIM model.
+        """
         port = 5000
         for model in self._config.models:
             self._api_generator.generate(model, self._microservice_paths[model.entity.name], port)
