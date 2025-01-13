@@ -50,7 +50,7 @@ class FrontendGenerator(ABC):
             # Add relationships to configure nested tables, dropdowns
             for relationship in self._cim_model.relationships:
                 if relationship.source == cim_entity.name:
-                    if relationship.type == "composition":
+                    if relationship.type == "composition" or relationship.type == "aggregation":
                         # Handle one-to-many relationships as nested tables
                         pim_entity.add_relationship(relationship.target, "nested_table")
                     elif relationship.type == "aggregation":
@@ -59,7 +59,7 @@ class FrontendGenerator(ABC):
 
                 # Ensure bidirectional relationships are added
                 if relationship.target == cim_entity.name:
-                    if relationship.type == "composition":
+                    if relationship.type == "composition" or relationship.type == "aggregation":
                         # Handle reverse of one-to-many as parent reference
                         pim_entity.add_relationship(relationship.source, "parent_reference")
                     elif relationship.type == "aggregation":
@@ -138,7 +138,6 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
             "checkbox": "checkbox",
         }
         return type_mapping.get(pim_type, "text")
-
 
     def _map_relationship_to_react(self, relationship_type):
         """

@@ -1,5 +1,4 @@
 project_name: Example
-auth: jwt
 backend:
   architecture: monolithic
   framework: flask
