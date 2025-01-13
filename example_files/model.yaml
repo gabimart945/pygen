@@ -26,11 +26,6 @@ entities:
       - name: last_name
         type: String
 
-  - name: Specialty
-    attributes:
-      - name: name
-        type: String
-
   - name: Visit
     attributes:
       - name: visit_date
@@ -42,7 +37,7 @@ entities:
 relationships:
   - source: Owner
     target: Pet
-    type: composition
+    type: aggregation
     source_multiplicity: 1
     target_multiplicity: 0..*
 
@@ -56,10 +51,4 @@ relationships:
     target: Visit
     type: composition
     source_multiplicity: 1
-    target_multiplicity: 0..*
-
-  - source: Vet
-    target: Specialty
-    type: aggregation
-    source_multiplicity: 0..*
     target_multiplicity: 0..*
