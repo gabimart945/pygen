@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pygen.generators.api import FlaskApiGenerator
-from pygen.models.backend_pim import PimModel, Entity
+from pygen.models.backend_pim import BackPimModel, BackPimEntity
 
 
 class IBackendGenerator(ABC):
@@ -119,12 +119,12 @@ class MonolithicBackendGenerator(IBackendGenerator):
         Postcondition:
         - The PIM model (`self._pim_model`) is populated with transformed entities and relationships.
         """
-        self._pim_model = PimModel()  # Initialize the PIM model
+        self._pim_model = BackPimModel()  # Initialize the PIM model
 
         # Transform each entity from CIM to PIM
         for cim_entity in self._cim_model.entities:
             # Create a new PIM entity corresponding to the current CIM entity
-            pim_entity = Entity(cim_entity.name)
+            pim_entity = BackPimEntity(cim_entity.name)
 
             # Add a primary key attribute (`id`) to the PIM entity
             pim_entity.add_attribute("id", "Integer", primary_key=True, nullable=False)
@@ -262,9 +262,9 @@ class MicroservicesBackendGenerator(IBackendGenerator):
 
         # Transform each entity from CIM to PIM
         for cim_entity in self._cim_model.entities:
-            pim_model = PimModel()
+            pim_model = BackPimModel()
             # Create a new PIM entity corresponding to the current CIM entity
-            pim_entity = Entity(cim_entity.name)
+            pim_entity = BackPimEntity(cim_entity.name)
 
             # Add a primary key attribute (`id`) to the PIM entity
             pim_entity.add_attribute("id", "Integer", primary_key=True, nullable=False)

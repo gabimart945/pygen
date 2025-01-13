@@ -1,4 +1,4 @@
-class Attribute:
+class CimAttribute:
     """
     Represents an attribute of an entity in the UML model.
 
@@ -32,7 +32,7 @@ class Attribute:
         return f"Attribute(name={self._name!r}, type={self._type!r})"
 
 
-class Entity:
+class CimEntity:
     """
     Represents an entity in the UML model.
 
@@ -49,7 +49,7 @@ class Entity:
             yaml_entity (dict): Dictionary containing the entity data, including 'name' and a list of 'attributes'.
         """
         self._name = yaml_entity["name"]
-        self._attributes = [Attribute(attribute) for attribute in yaml_entity['attributes']]
+        self._attributes = [CimAttribute(attribute) for attribute in yaml_entity['attributes']]
 
     @property
     def name(self):
@@ -66,7 +66,7 @@ class Entity:
         return f"Entity(name={self._name!r}, attributes={self._attributes!r})"
 
 
-class Relationship:
+class CimRelationship:
     """
     Represents a relationship between two entities in the UML model.
 

@@ -1,7 +1,7 @@
 import yaml
 
 
-class Field:
+class FlaskPsmField:
     """
     Represents a field of a resource in the Platform-Specific Model (PSM).
 
@@ -74,7 +74,7 @@ class Field:
                 f"primary_key={self._primary_key}, nullable={self._nullable})")
 
 
-class Relationship:
+class FlaskPsmRelationship:
     """
     Represents a relationship between resources in the Platform-Specific Model (PSM).
 
@@ -139,7 +139,7 @@ class Relationship:
                 f"type={self._type}, back_populates={self._back_populates})")
 
 
-class Entity:
+class FlaskPsmEntity:
     """
     Represents a resource or entity in the Platform-Specific Model (PSM).
 
@@ -193,7 +193,7 @@ class Entity:
             foreign_key (str, optional): Foreign key relationship, if any. Defaults to None.
             nullable (bool, optional): Whether the field can be null. Defaults to True.
         """
-        field = Field(name, field_type, primary_key, foreign_key, nullable)
+        field = FlaskPsmField(name, field_type, primary_key, foreign_key, nullable)
         self._fields.append(field)
 
     def add_relationship(self, name, target, rel_type, back_populates=None):
@@ -206,7 +206,7 @@ class Entity:
             rel_type (str): The type of the relationship.
             back_populates (str, optional): Back reference to the source entity. Defaults to None.
         """
-        relationship = Relationship(name, target, rel_type, back_populates)
+        relationship = FlaskPsmRelationship(name, target, rel_type, back_populates)
         self._relationships.append(relationship)
 
     def to_dict(self):
@@ -229,7 +229,7 @@ class Entity:
                 f"fields={self._fields}, relationships={self._relationships})")
 
 
-class PsmModel:
+class FlaskPsmModel:
     """
     Represents the entire Platform-Specific Model (PSM).
 

@@ -1,7 +1,7 @@
 import yaml
 
 
-class Attribute:
+class BackPimAttribute:
     """
     Represents an attribute of an entity.
 
@@ -73,7 +73,7 @@ class Attribute:
         return f"Attribute(name={self.name}, type={self.type}, primary_key={self.primary_key}, nullable={self.nullable})"
 
 
-class Relationship:
+class BackPimRelationship:
     """
     Represents a relationship between entities.
 
@@ -128,7 +128,7 @@ class Relationship:
         return f"Relationship(name={self.name}, target={self.target}, type={self.type})"
 
 
-class Entity:
+class BackPimEntity:
     """
     Represents an entity in the model.
 
@@ -174,7 +174,7 @@ class Entity:
             foreign_key (str, optional): Foreign key relationship, if any. Defaults to None.
             nullable (bool, optional): Whether the attribute can be null. Defaults to True.
         """
-        attribute = Attribute(name, attr_type, primary_key, foreign_key, nullable)
+        attribute = BackPimAttribute(name, attr_type, primary_key, foreign_key, nullable)
         self._attributes.append(attribute)
 
     def add_relationship(self, name, target, rel_type):
@@ -186,7 +186,7 @@ class Entity:
             target (str): The target entity of the relationship.
             rel_type (str): The type of the relationship.
         """
-        relationship = Relationship(name, target, rel_type)
+        relationship = BackPimRelationship(name, target, rel_type)
         self._relationships.append(relationship)
 
     def to_dict(self):
@@ -207,7 +207,7 @@ class Entity:
         return f"Entity(name={self.name}, attributes={self.attributes}, relationships={self.relationships})"
 
 
-class PimModel:
+class BackPimModel:
     """
     Represents the entire Platform Independent Model (PIM).
 

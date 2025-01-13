@@ -1,7 +1,7 @@
 import yaml
 
 
-class PSMField:
+class ReactPsmField:
     """
     Represents a field in the PSM model for React.
     """
@@ -32,7 +32,7 @@ class PSMField:
         return f"PSMField(name={self.name!r}, type={self.type!r})"
 
 
-class PSMRelationship:
+class ReactPsmRelationship:
     """
     Represents a relationship in the PSM model for React.
     """
@@ -63,7 +63,7 @@ class PSMRelationship:
         return f"PSMRelationship(target={self.target!r}, type={self.type!r})"
 
 
-class PSMComponent:
+class ReactPsmComponent:
     """
     Represents a React component in the PSM model.
     """
@@ -89,7 +89,7 @@ class PSMComponent:
             name (str): The name of the field.
             field_type (str): The React-compatible type of the field.
         """
-        self.fields.append(PSMField(name, field_type))
+        self.fields.append(ReactPsmField(name, field_type))
 
     def add_relationship(self, target: str, relationship_type: str):
         """
@@ -99,7 +99,7 @@ class PSMComponent:
             target (str): The target entity of the relationship.
             relationship_type (str): The React-compatible component type for the relationship.
         """
-        self.relationships.append(PSMRelationship(target, relationship_type))
+        self.relationships.append(ReactPsmRelationship(target, relationship_type))
 
     def to_dict(self):
         """
@@ -123,7 +123,7 @@ class PSMComponent:
                 f"form_component={self.form_component}, detail_component={self.detail_component})")
 
 
-class PSMModel:
+class ReactPsmModel:
     """
     Represents the complete PSM model for React.
     """
@@ -133,7 +133,7 @@ class PSMModel:
         """
         self.components = []
 
-    def add_component(self, name: str) -> PSMComponent:
+    def add_component(self, name: str) -> ReactPsmComponent:
         """
         Adds a React component to the PSM model.
 
@@ -143,7 +143,7 @@ class PSMModel:
         Returns:
             PSMComponent: The created component.
         """
-        component = PSMComponent(name)
+        component = ReactPsmComponent(name)
         self.components.append(component)
         return component
 

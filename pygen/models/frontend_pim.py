@@ -1,4 +1,4 @@
-class PIMAttribute:
+class FrontPimAttribute:
     """
     Represents an attribute in the Platform Independent Model (PIM).
 
@@ -25,7 +25,7 @@ class PIMAttribute:
         return f"PIMAttribute(name={self.name!r}, type={self.type!r}, nullable={self.nullable})"
 
 
-class PIMRelationship:
+class FrontPimRelationship:
     """
     Represents a relationship between entities in the Platform Independent Model (PIM).
 
@@ -49,7 +49,7 @@ class PIMRelationship:
         return f"PIMRelationship(target={self.target!r}, type={self.type!r})"
 
 
-class PIMEntity:
+class FrontPimEntity:
     """
     Represents an entity in the Platform Independent Model (PIM).
 
@@ -78,7 +78,7 @@ class PIMEntity:
             attr_type (str): The type of the attribute.
             nullable (bool): Whether the attribute can be null. Defaults to True.
         """
-        self.attributes.append(PIMAttribute(name, attr_type, nullable))
+        self.attributes.append(FrontPimAttribute(name, attr_type, nullable))
 
     def add_relationship(self, target: str, rel_type: str):
         """
@@ -88,14 +88,14 @@ class PIMEntity:
             target (str): The name of the target entity.
             rel_type (str): The type of the relationship.
         """
-        self.relationships.append(PIMRelationship(target, rel_type))
+        self.relationships.append(FrontPimRelationship(target, rel_type))
 
     def __repr__(self):
         """Returns a string representation of the PIM entity."""
         return f"PIMEntity(name={self.name!r}, attributes={self.attributes!r}, relationships={self.relationships!r})"
 
 
-class PIMModel:
+class FrontPimModel:
     """
     Represents the complete Platform Independent Model (PIM).
 
@@ -108,7 +108,7 @@ class PIMModel:
         """
         self.entities = []
 
-    def add_entity(self, name: str) -> PIMEntity:
+    def add_entity(self, name: str) -> FrontPimEntity:
         """
         Adds an entity to the model.
 
@@ -118,7 +118,7 @@ class PIMModel:
         Returns:
             PIMEntity: The created entity.
         """
-        entity = PIMEntity(name)
+        entity = FrontPimEntity(name)
         self.entities.append(entity)
         return entity
 

@@ -4,7 +4,7 @@ import os
 
 from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
     IntegrationTestGenerator
-from pygen.models.flask_psm import PsmModel, Entity
+from pygen.models.flask_psm import FlaskPsmModel, FlaskPsmEntity
 
 
 class IBackendApiGenerator(ABC):
@@ -409,7 +409,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
         Sets:
             self._psm_model (PsmModel): The transformed PSM model.
         """
-        psm_model = PsmModel()  # Create a new PSM model
+        psm_model = FlaskPsmModel()  # Create a new PSM model
         relationship_map = {}
 
         # First pass: Build the relationship map for direct relationships
@@ -429,7 +429,7 @@ class FlaskApiGenerator(IBackendApiGenerator):
 
         # Second pass: Create PSM entities and assign relationships
         for pim_entity in model.entities:
-            psm_entity = Entity(pim_entity.name, table_name=pim_entity.name.lower() + "s")
+            psm_entity = FlaskPsmEntity(pim_entity.name, table_name=pim_entity.name.lower() + "s")
 
             # Add fields
             for pim_attribute in pim_entity.attributes:

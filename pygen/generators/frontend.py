@@ -5,8 +5,8 @@ import subprocess
 
 from pygen.generators.frontend_test_generator import ReactTestGenerator
 from pygen.models.cim import CimModel
-from pygen.models.frontend_pim import PIMModel
-from pygen.models.react_psm import PSMModel
+from pygen.models.frontend_pim import FrontPimModel
+from pygen.models.react_psm import ReactPsmModel
 
 
 class FrontendGenerator(ABC):
@@ -41,7 +41,7 @@ class FrontendGenerator(ABC):
         Converts entity attributes and relationships into forms, views, and components
         suitable for frontend development.
         """
-        self._pim_model = PIMModel()
+        self._pim_model = FrontPimModel()
 
         type_mapping_to_form = {
             "String": "text",
@@ -126,7 +126,7 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         Maps attributes and relationships to React-compatible inputs and components.
         """
-        self._psm_model = PSMModel()
+        self._psm_model = ReactPsmModel()
         for entity in self._pim_model.entities:
             component = self._psm_model.add_component(entity.name)
 
