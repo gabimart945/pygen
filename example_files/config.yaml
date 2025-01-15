@@ -1,4 +1,5 @@
 project_name: Example
+cicd: azure
 backend:
   architecture: monolithic
   framework: flask

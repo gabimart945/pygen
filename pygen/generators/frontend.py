@@ -3,7 +3,9 @@ import os
 from jinja2 import Environment, FileSystemLoader
 import subprocess
 
+from pygen.generators.dockerfile_generator import FrontendDockerfileGenerator
 from pygen.generators.frontend_test_generator import ReactTestGenerator
+from pygen.generators.pipeline_generator import AzureDevOpsPipelineGenerator, GithubActionsPipelineGenerator
 from pygen.models.cim import CimModel
 from pygen.models.frontend_pim import PIMModel
 from pygen.models.react_psm import PSMModel
@@ -25,6 +27,12 @@ class FrontendGenerator(ABC):
         self._pim_model = None  # Will be populated after the CIM to PIM transformation
         self._transform_cim_to_pim()
         self._path = path
+        if self._config.cicd == 'azure':
+            self._pipeline_generator = AzureDevOpsPipelineGenerator()
+        elif self._config.cicd == 'github':
+            self._pipeline_generator = GithubActionsPipelineGenerator()
+        else:
+            self._pipeline_generator = None
 
     def _transform_cim_to_pim(self):
         """
@@ -162,6 +170,14 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         self._generate_components()
         self._generate_views()
         self._test_generator.generate()
+        config = {
+            "base_image": "node:16-alpine",
+            "build_dir": "build"
+        }
+        generator = FrontendDockerfileGenerator(self._path, config)
+        generator.generate()
+        if self._pipeline_generator:
+            self._pipeline_generator.generate_frontend_pipeline(os.path.join(self._path,"frontend-ci-pipeline.yml"))
 
     def _generate_components(self):
         """
@@ -262,52 +278,32 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
 
         # Create package.json
         package_json_content = {
-              "name": "react-frontend",
-              "version": "0.1.0",
-              "private": True,
-              "dependencies": {
-                "axios": "^1.5.0",
-                "bootstrap": "^5.3.1",
-                "react": "^18.2.0",
-                "react-bootstrap": "^2.8.0",
-                "react-dom": "^18.2.0",
-                "react-router-dom": "^6.14.0",
-                "react-scripts": "5.0.1"
-              },
-              "devDependencies": {
-                "@babel/core": "^7.26.0",
-                "@babel/preset-env": "^7.26.0",
-                "@babel/preset-react": "^7.26.3",
-                "@testing-library/jest-dom": "^6.0.0",
-                "@testing-library/react": "^14.1.0",
-                "@testing-library/user-event": "^14.5.0",
-                "babel-jest": "^29.7.0",
-                "eslint": "^8.57.1",
-                "jest": "^29.7.0",
-                "jest-environment-jsdom": "^29.7.0",
-                "rimraf": "^4.0.0"
-              },
-              "scripts": {
-                "start": "react-scripts start",
-                "build": "react-scripts build",
-                "test": "react-scripts test",
-                "test:coverage": "react-scripts test -- --coverage",
-                "eject": "react-scripts eject"
-              },
-              "browserslist": {
-                "production": [
-                  ">0.2%",
-                  "not dead",
-                  "not op_mini all"
-                ],
-                "development": [
-                  "last 1 chrome version",
-                  "last 1 firefox version",
-                  "last 1 safari version"
-                ]
-              }
-            }
-
+          "name": "react-frontend",
+          "version": "0.1.0",
+          "private": True,
+          "dependencies": {
+            "react": "^18.2.0",
+            "react-dom": "^18.2.0",
+            "axios": "^1.3.0",
+            "react-router-dom": "^6.14.0",
+            "react-bootstrap": "^2.6.0",
+            "bootstrap": "^5.3.1"
+          },
+          "devDependencies": {
+            "@testing-library/react": "^14.0.0",
+            "@testing-library/jest-dom": "^6.0.0",
+            "@testing-library/user-event": "^14.0.0",
+            "jest": "^29.0.0",
+            "jest-environment-jsdom": "^29.0.0"
+          },
+          "scripts": {
+            "start": "react-scripts start",
+            "build": "react-scripts build",
+            "test": "react-scripts test",
+            "test:coverage": "react-scripts test -- --coverage",
+            "eject": "react-scripts eject"
+          }
+        }
 
         with open(os.path.join(self._path, "package.json"), "w") as file:
             import json

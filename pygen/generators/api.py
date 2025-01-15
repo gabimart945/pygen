@@ -4,6 +4,8 @@ import os
 
 from pygen.generators.backend_test_generator import FlaskTestGenerator, SecurityTestGenerator, \
     IntegrationTestGenerator
+from pygen.generators.dockerfile_generator import BackendDockerfileGenerator
+from pygen.generators.pipeline_generator import AzureDevOpsPipelineGenerator, GithubActionsPipelineGenerator
 from pygen.models.flask_psm import PsmModel, Entity
 
 
@@ -26,6 +28,13 @@ class IBackendApiGenerator(ABC):
         """
         self._config = config
         self._psm_model = None
+        if self._config.cicd == 'azure':
+            self._pipeline_generator = AzureDevOpsPipelineGenerator()
+        elif self._config.cicd == 'github':
+            self._pipeline_generator = GithubActionsPipelineGenerator()
+        else:
+            self._pipeline_generator = None
+
 
     def generate(self, model, root_path, port=5000):
         """
@@ -45,6 +54,14 @@ class IBackendApiGenerator(ABC):
         self._generate_models(root_path + '/app/models')
         self._generate_schemas(root_path + '/app/schemas')
         self._generate_tests(root_path + '/tests')
+        config = {
+            "base_image": "python:3.9-slim",
+            "port": port
+        }
+        generator = BackendDockerfileGenerator(root_path, config)
+        generator.generate()
+        if self._pipeline_generator:
+            self._pipeline_generator.generate_frontend_pipeline(os.path.join(root_path,"backend-ci-pipeline.yml"))
 
         # Si la autenticación es JWT, generamos los archivos adicionales
         if self._config.auth == "jwt":
