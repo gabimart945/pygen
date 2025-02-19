@@ -16,6 +16,9 @@ setup(
     url="https://github.com/yourusername/pygen",  # Update this with your repository URL
     packages=find_packages(exclude=["tests", "tests.*", "example_files"]),
     include_package_data=True,
+    package_data={
+        "pygen.generators": ["templates/*"],  # Incluye todos los archivos dentro de templates
+    },
     install_requires=parse_requirements("requirements.txt"),
     entry_points={
         "console_scripts": [
