@@ -17,7 +17,7 @@ setup(
     packages=find_packages(exclude=["tests", "tests.*", "example_files"]),
     include_package_data=True,
     package_data={
-        "pygen.generators": ["templates/*"],  # Incluye todos los archivos dentro de templates
+        "pygen.generators": ["templates/**/*"],  # Incluir todos los archivos y subdirectorios dentro de templates
     },
     install_requires=parse_requirements("requirements.txt"),
     entry_points={
