@@ -101,7 +101,8 @@ class SecurityTestGenerator:
         self._config = config
         self._psm_model = psm_model
         self._tests_path = tests_path
-        self._templates_path = "pygen/generators/templates/backend/security_tests"
+        template_dir = os.path.join(os.path.dirname(__file__), "templates")
+        self._templates_path = template_dir + "/backend/security_tests"
         self._env = Environment(loader=FileSystemLoader(self._templates_path))
 
     def generate(self):
@@ -154,7 +155,8 @@ class IntegrationTestGenerator:
         self._config = config
         self._psm_model = psm_model
         self._tests_path = tests_path
-        self._templates_path = "pygen/generators/templates/backend/integration_tests"
+        template_dir = os.path.join(os.path.dirname(__file__), "templates")
+        self._templates_path = template_dir + "/integration_tests"
         self._env = Environment(loader=FileSystemLoader(self._templates_path))
 
     def generate(self):
