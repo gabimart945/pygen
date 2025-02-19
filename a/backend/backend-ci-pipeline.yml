@@ -1,0 +1,39 @@
+trigger:
+  branches:
+    include:
+    - main
+pool:
+  name: pc
+steps:
+- script: npm install
+  displayName: Install Dependencies
+- script: npm run build
+  displayName: Build Frontend
+- script: npm test -- --reporters jest-junit --outputFile=jest-test-results.xml
+  displayName: Run Frontend Tests and Generate Report
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: JUnit
+    testResultsFiles: '**/jest-test-results.xml'
+    failTaskOnFailedTests: true
+    testRunTitle: Frontend Test Results
+  displayName: Publish Frontend Test Results
+- script: npm audit --json > npm-audit-report.json || true
+  displayName: Run Dependency Security Analysis (npm audit)
+- script: 'npm install -g audit-ci
+
+    audit-ci --json > audit-ci-report.json || true'
+  displayName: Run Dependency Security Analysis (audit-ci)
+- script: 'zap-cli start
+
+    zap-cli quick-scan http://localhost:3000 > zap-scan-report.json || true
+
+    zap-cli shutdown'
+  displayName: Run OWASP ZAP Security Scan
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: JUnit
+    testResultsFiles: '**/zap-scan-report.json'
+    failTaskOnFailedTests: false
+    testRunTitle: OWASP ZAP Security Scan Results
+  displayName: Publish OWASP ZAP Scan Results

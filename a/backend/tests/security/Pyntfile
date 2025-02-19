@@ -1,0 +1,52 @@
+from pynt import task
+import os
+import subprocess
+
+@task()
+def install_requirements():
+    """
+    Install required dependencies for running tests.
+    """
+    print("Installing requirements...")
+    subprocess.run(["pip", "install", "-r", "requirements.txt"], cwd=os.getcwd())
+
+@task()
+def run_all_security_tests():
+    """
+    Run all security tests for all entities.
+    """
+    print("Running all security tests...")
+    subprocess.run(["pytest", "tests/security"], cwd=os.getcwd())
+
+
+@task()
+def run_owner_security_tests():
+    """
+    Run security tests for the Owner controller.
+    """
+    print("Running security tests for Owner...")
+    subprocess.run(["pytest", f"tests/security/test_owner_security.py"], cwd=os.getcwd())
+
+@task()
+def run_pet_security_tests():
+    """
+    Run security tests for the Pet controller.
+    """
+    print("Running security tests for Pet...")
+    subprocess.run(["pytest", f"tests/security/test_pet_security.py"], cwd=os.getcwd())
+
+@task()
+def run_vet_security_tests():
+    """
+    Run security tests for the Vet controller.
+    """
+    print("Running security tests for Vet...")
+    subprocess.run(["pytest", f"tests/security/test_vet_security.py"], cwd=os.getcwd())
+
+@task()
+def run_visit_security_tests():
+    """
+    Run security tests for the Visit controller.
+    """
+    print("Running security tests for Visit...")
+    subprocess.run(["pytest", f"tests/security/test_visit_security.py"], cwd=os.getcwd())

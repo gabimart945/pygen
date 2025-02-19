@@ -5,12 +5,6 @@ entities:
         type: String
       - name: last_name
         type: String
-      - name: address
-        type: String
-      - name: city
-        type: String
-      - name: telephone
-        type: String
 
   - name: Pet
     attributes:

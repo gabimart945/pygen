@@ -1,0 +1,10 @@
+Flask
+Flask-Migrate
+Flask-SQLAlchemy
+marshmallow
+flask-cors
+pytest
+requests
+pynt
+Flask-JWT-Extended
+cryptography

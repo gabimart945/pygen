@@ -154,7 +154,7 @@ class BackendConfiguration(object):
         Raises:
             ValueError: If the database or environment is unsupported.
         """
-        if database in ["postgresql", "sqlite"]:
+        if database in ["sqlite"]:
             if environment == "production":
                 self._database.set_production(database)
             elif environment == "development":
@@ -390,11 +390,11 @@ class ProjectConfiguration(object):
 
         # Select production database
         print("\nSelect production database:")
-        self._backend.database.set_production(self._get_option(["postgresql", "sqlite"]))
+        self._backend.database.set_production(self._get_option(["sqlite"]))
 
         # Select development database
         print("\nSelect development database:")
-        self._backend.database.set_development(self._get_option(["postgresql", "sqlite"]))
+        self._backend.database.set_development(self._get_option(["sqlite"]))
 
         # Select backend framework
         print("\nSelect frontend framework:")

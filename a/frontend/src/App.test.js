@@ -1,0 +1,28 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+// Mockear Axios
+jest.mock('axios', () => ({
+    create: jest.fn(() => ({
+        interceptors: {
+            request: {
+                use: jest.fn(), // Simula el método 'use' del interceptor
+            },
+        },
+        get: jest.fn(),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+    })),
+}));
+
+describe('App Component Tests', () => {
+  it('renders the App component without crashing', () => {
+    render(
+        <App />
+    );
+    expect(screen.getByText(/Home/i)).toBeInTheDocument();
+  });
+
+});
