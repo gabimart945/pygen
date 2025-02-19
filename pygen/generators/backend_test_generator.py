@@ -156,7 +156,7 @@ class IntegrationTestGenerator:
         self._psm_model = psm_model
         self._tests_path = tests_path
         template_dir = os.path.join(os.path.dirname(__file__), "templates")
-        self._templates_path = template_dir + "/integration_tests"
+        self._templates_path = template_dir + "/backend/integration_tests"
         self._env = Environment(loader=FileSystemLoader(self._templates_path))
 
     def generate(self):
