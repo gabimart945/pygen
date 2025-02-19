@@ -61,7 +61,7 @@ class IBackendApiGenerator(ABC):
         generator = BackendDockerfileGenerator(root_path, config)
         generator.generate()
         if self._pipeline_generator:
-            self._pipeline_generator.generate_frontend_pipeline(os.path.join(root_path,"backend-ci-pipeline.yml"))
+            self._pipeline_generator.generate_backend_pipeline(os.path.join(root_path,"backend-ci-pipeline.yml"))
 
         # Si la autenticación es JWT, generamos los archivos adicionales
         if self._config.auth == "jwt":
