@@ -154,7 +154,7 @@ class BackendConfiguration(object):
         Raises:
             ValueError: If the database or environment is unsupported.
         """
-        if database in ["postgresql", "sqlite"]:
+        if database in ["sqlite"]:
             if environment == "production":
                 self._database.set_production(database)
             elif environment == "development":
@@ -228,12 +228,14 @@ class ProjectConfiguration(object):
             self._auth = yaml_configuration.get("auth", None)
             self._backend = BackendConfiguration(yaml_configuration["backend"])
             self._frontend = FrontendConfiguration(yaml_configuration["frontend"])
+            self._cicd = yaml_configuration.get("cicd", None)
 
         else:
             self._project_name = None
             self._auth = None
             self._backend = BackendConfiguration()
             self._frontend = FrontendConfiguration()
+            self._cicd = None
 
     @property
     def project_name(self):
@@ -274,6 +276,31 @@ class ProjectConfiguration(object):
             BackendConfiguration: Backend configuration object.
         """
         return self._frontend
+
+    @property
+    def cicd(self):
+        """
+        Gets the ci/cd platform.
+
+        Returns:
+            str: The ci/cd platform.
+        """
+        return self._cicd
+
+    def set_cicd(self, cicd):
+        """
+        Sets the ci/cd platform after sanitizing it.
+
+        Args:
+            cicd (str): The ci/cd platform.
+
+        Raises:
+            ValueError: If the ci/cd platform is unsupported.
+        """
+        if cicd in ["azure", "github"]:
+            self._cicd = cicd
+        else:
+            raise ValueError(f"Unsupported ci/cd platform: {cicd}")
 
     def set_project_name(self, project_name):
         """
@@ -363,15 +390,19 @@ class ProjectConfiguration(object):
 
         # Select production database
         print("\nSelect production database:")
-        self._backend.database.set_production(self._get_option(["postgresql", "sqlite"]))
+        self._backend.database.set_production(self._get_option(["sqlite"]))
 
         # Select development database
         print("\nSelect development database:")
-        self._backend.database.set_development(self._get_option(["postgresql", "sqlite"]))
+        self._backend.database.set_development(self._get_option(["sqlite"]))
 
         # Select backend framework
         print("\nSelect frontend framework:")
         self._frontend.set_framework(self._get_option(["react"]))
+
+        # Select ci/cd platform
+        print("\nSelect ci/cd platform:")
+        self.set_cicd(self._get_option(["azure", "github"]))
 
         # Summary of configuration
         print("\nProject Configuration Complete:")

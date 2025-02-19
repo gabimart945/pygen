@@ -13,10 +13,36 @@ entities:
       - name: birth_date
         type: Date
 
+  - name: Vet
+    attributes:
+      - name: first_name
+        type: String
+      - name: last_name
+        type: String
+
+  - name: Visit
+    attributes:
+      - name: visit_date
+        type: Date
+      - name: description
+        type: String
+
+# Definición de Relaciones
 relationships:
   - source: Owner
     target: Pet
+    type: aggregation
+    source_multiplicity: 1
+    target_multiplicity: 0..*
+
+  - source: Pet
+    target: Visit
     type: composition
     source_multiplicity: 1
     target_multiplicity: 0..*
 
+  - source: Vet
+    target: Visit
+    type: composition
+    source_multiplicity: 1
+    target_multiplicity: 0..*
