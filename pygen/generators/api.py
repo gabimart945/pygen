@@ -178,7 +178,9 @@ class FlaskApiGenerator(IBackendApiGenerator):
             config (object): The configuration object for the Flask API generation process.
         """
         super().__init__(config)
-        self._templates_path = "pygen/generators/templates/backend/flask"
+        # Obtener la ruta dentro del paquete
+        template_dir = os.path.join(os.path.dirname(__file__), "templates")
+        self._templates_path = template_dir + "/backend/flask"
 
     def _generate_project_files(self, root_path):
         """

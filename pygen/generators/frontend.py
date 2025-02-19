@@ -105,7 +105,8 @@ class ReactFrontendGenerator(FrontendGenerator, ABC):
         super().__init__( config, cim_model, path)
         self._psm_model = None  # Will store the React-specific components
         self._transform_pim_to_psm()
-        self._templates_path = "pygen/generators/templates/frontend/react"
+        template_dir = os.path.join(os.path.dirname(__file__), "templates")
+        self._templates_path = template_dir + "/frontend/react"
         self._test_generator = ReactTestGenerator(config, self._psm_model, os.path.join(path, "src/tests"))
 
     def _transform_pim_to_psm(self):
