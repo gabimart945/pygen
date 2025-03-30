@@ -95,15 +95,13 @@ class Project(object):
         # Save the current working directory
         original_directory = os.getcwd()
         # Generate full paths using class variables
-        backend_path = os.path.join(self._root_folder, self._paths["backend"])
-        frontend_path = os.path.join(self._root_folder, self._paths["frontend"])
 
         print(f"Original working directory: {original_directory}")
 
         try:
             # Step 1: Navigate to Python path
-            print(f"\n1. Navigating to: {backend_path}")
-            os.chdir(backend_path)
+            print(f"\n1. Navigating to: {self._paths["backend"]}")
+            os.chdir(self._paths["backend"])
             print(f"Current directory: {os.getcwd()}")
 
             # Step 2: Install dependencies with pip
@@ -124,15 +122,41 @@ class Project(object):
             print(f"Current directory: {os.getcwd()}")
 
             # Step 4: Navigate to Node.js path
-            print(f"\n4. Navigating to: {frontend_path}")
-            os.chdir(frontend_path)
+            print(f"\n4. Navigating to: {self._paths["frontend"]}")
+            os.chdir(self._paths["frontend"])
             print(f"Current directory: {os.getcwd()}")
 
             # Step 5: Install dependencies with npm
             print("\n5. Installing dependencies with npm...")
             if os.path.exists('package.json'):
-                npm_result = subprocess.run(['npm', 'install'],
-                                            capture_output=True, text=True)
+                # Try multiple ways to run npm to handle path issues
+                try:
+                    # Try with full path on Windows
+                    if os.name == 'nt':  # Windows
+                        npm_paths = [
+                            r'C:\Program Files\nodejs\npm.cmd',
+                            r'C:\Program Files (x86)\nodejs\npm.cmd',
+                            os.path.join(os.environ.get('APPDATA', ''), 'npm', 'npm.cmd'),
+                            os.path.join(os.environ.get('ProgramFiles', ''), 'nodejs', 'npm.cmd')
+                        ]
+
+                        for npm_path in npm_paths:
+                            if os.path.exists(npm_path):
+                                print(f"Found npm at: {npm_path}")
+                                npm_result = subprocess.run([npm_path, 'install'],
+                                                            capture_output=True, text=True)
+                                break
+                        else:
+                            # If no specific path works, try with shell=True
+                            print("Using shell=True to find npm")
+                            npm_result = subprocess.run('npm install',
+                                                        shell=True, capture_output=True, text=True)
+                    else:  # Non-Windows systems
+                        npm_result = subprocess.run(['npm', 'install'],
+                                                    capture_output=True, text=True)
+                except Exception as e:
+                    print(f"Error attempting to run npm: {str(e)}")
+                    return False
                 print(npm_result.stdout)
                 if npm_result.returncode != 0:
                     print(f"Error installing dependencies with npm: {npm_result.stderr}")
