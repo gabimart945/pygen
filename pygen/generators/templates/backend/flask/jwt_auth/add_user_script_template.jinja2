@@ -15,7 +15,7 @@ def create_admin(username, password):
             admin_user.is_admin = True
             db.session.add(admin_user)
             db.session.commit()
-            print(f"Usuario admin '{username}' creado con éxito.")
+            print(f"Usuario admin '{username}' creado con exito.")
         else:
             print(f"El usuario '{username}' ya existe.")
 
@@ -23,7 +23,7 @@ def create_admin(username, password):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Crear un usuario administrador.")
     parser.add_argument("username", type=str, help="Nombre del usuario administrador")
-    parser.add_argument("password", type=str, help="Contraseña del usuario administrador")
+    parser.add_argument("password", type=str, help="Contrasena del usuario administrador")
 
     args = parser.parse_args()
     create_admin(args.username, args.password)
