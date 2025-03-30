@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 from pygen.generators.backend import MonolithicBackendGenerator
 from pygen.generators.frontend import ReactFrontendGenerator
 
@@ -65,6 +67,9 @@ class Project(object):
         # Generate frontend app
         self._generate_frontend()
 
+        # Install dependencies
+        self._install_dependencies()
+
     def _generate_file_structure(self):
         os.mkdir(self._root_folder)
         os.mkdir(self._paths["backend"])
@@ -76,4 +81,72 @@ class Project(object):
     def _generate_frontend(self):
         self._frontend_generator.generate()
 
+    def _install_dependencies(self):
+        """
+           Navigates to different directories and installs dependencies with pip and npm.
 
+           Args:
+               path_python (str): Path where Python dependencies will be installed
+               path_node (str): Path where Node.js dependencies will be installed
+
+           Returns:
+               bool: True if the entire process was successful, False otherwise
+           """
+        # Save the current working directory
+        original_directory = os.getcwd()
+        # Generate full paths using class variables
+        backend_path = os.path.join(self._root_folder, self._paths["backend"])
+        frontend_path = os.path.join(self._root_folder, self._paths["frontend"])
+
+        print(f"Original working directory: {original_directory}")
+
+        try:
+            # Step 1: Navigate to Python path
+            print(f"\n1. Navigating to: {backend_path}")
+            os.chdir(backend_path)
+            print(f"Current directory: {os.getcwd()}")
+
+            # Step 2: Install dependencies with pip
+            print("\n2. Installing dependencies with pip...")
+            if os.path.exists('requirements.txt'):
+                pip_result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'],
+                                            capture_output=True, text=True)
+                print(pip_result.stdout)
+                if pip_result.returncode != 0:
+                    print(f"Error installing dependencies with pip: {pip_result.stderr}")
+                    return False
+            else:
+                print("requirements.txt file not found")
+
+            # Step 3: Navigate back to the original directory
+            print(f"\n3. Returning to original directory: {original_directory}")
+            os.chdir(original_directory)
+            print(f"Current directory: {os.getcwd()}")
+
+            # Step 4: Navigate to Node.js path
+            print(f"\n4. Navigating to: {frontend_path}")
+            os.chdir(frontend_path)
+            print(f"Current directory: {os.getcwd()}")
+
+            # Step 5: Install dependencies with npm
+            print("\n5. Installing dependencies with npm...")
+            if os.path.exists('package.json'):
+                npm_result = subprocess.run(['npm', 'install'],
+                                            capture_output=True, text=True)
+                print(npm_result.stdout)
+                if npm_result.returncode != 0:
+                    print(f"Error installing dependencies with npm: {npm_result.stderr}")
+                    return False
+            else:
+                print("package.json file not found")
+
+            print("\nProcess completed successfully!")
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return False
+
+        finally:
+            # Make sure to return to the original directory when finished
+            os.chdir(original_directory)
+            print(f"Finished. Current directory: {os.getcwd()}")
