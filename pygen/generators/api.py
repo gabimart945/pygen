@@ -543,4 +543,9 @@ class FlaskApiGenerator(IBackendApiGenerator):
         with open(os.path.join(root_path, "app/controllers/auth_controller.py"), "w") as file:
             file.write(auth_controller_template.render())
 
+        # Generate add_admin script
+        auth_service_template = env.get_template("add_user_script_template.jinja2")
+        with open(os.path.join(root_path, "app/add_admin.py"), "w") as file:
+            file.write(auth_service_template.render())
+
         print("Authentication files generated successfully.")
