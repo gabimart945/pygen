@@ -28,3 +28,11 @@ PyGen es una herramienta de generación automática de aplicaciones web que perm
     ```bash
     pip install -r requirements.txt
     ```
+   
+## Instalación con pip
+
+1. Instala el módulo pygen
+   ```bash
+   pip install git+https://github.com/gabimart945/pygen.git
+   ```
+
