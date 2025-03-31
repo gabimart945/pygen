@@ -1,3 +1,0 @@
-relationships:
-  - source: User
-    target: Profile
